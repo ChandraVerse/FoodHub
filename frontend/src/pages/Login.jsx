@@ -3,10 +3,12 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const onSubmit = async (data) => {
     try {
@@ -28,6 +30,13 @@ const Login = () => {
       }
 
       const body = await response.json().catch(() => null);
+      if (body && body.userId && body.role) {
+        login({
+          id: body.userId,
+          role: body.role,
+          email: data.email
+        });
+      }
       if (typeof window !== 'undefined') {
         window.alert('Login successful.');
       }

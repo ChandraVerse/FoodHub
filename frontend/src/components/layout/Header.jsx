@@ -3,10 +3,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShoppingBag, User, Menu, X, Search, Tag } from 'lucide-react';
 import ThemeToggle from '../common/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, logout } = useAuth();
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -40,17 +42,39 @@ const Header = () => {
           ))}
         </nav>
 
-        {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
           <ThemeToggle />
           <Link to="/cart" className="relative p-2 hover:bg-gray-100 dark:hover:bg-dark-hover rounded-full transition-colors text-gray-700 dark:text-gray-300">
             <ShoppingBag size={24} />
             <span className="absolute top-0 right-0 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">3</span>
           </Link>
-          <Link to="/login" className="flex items-center space-x-2 px-4 py-2 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition duration-300 font-semibold">
-            <User size={20} />
-            <span>Login</span>
-          </Link>
+          {user && user.role === 'restaurant_owner' && (
+            <Link
+              to="/restaurants"
+              className="px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-semibold transition-colors text-sm"
+            >
+              Manage Restaurant
+            </Link>
+          )}
+          {user ? (
+            <>
+              <div className="flex items-center gap-2 px-3 py-2 rounded-full bg-gray-100 dark:bg-dark-hover text-gray-800 dark:text-gray-200 text-sm">
+                <User size={18} className="text-primary" />
+                <span>{user.role === 'restaurant_owner' ? 'Owner' : 'Customer'}</span>
+              </div>
+              <button
+                onClick={logout}
+                className="px-4 py-2 rounded-full border border-gray-300 dark:border-dark-border text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-dark-hover transition-colors"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <Link to="/login" className="flex items-center space-x-2 px-4 py-2 bg-primary/10 text-primary rounded-full hover:bg-primary hover:text-white transition duration-300 font-semibold">
+              <User size={20} />
+              <span>Login</span>
+            </Link>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
@@ -93,9 +117,30 @@ const Header = () => {
                    <ShoppingBag size={20} />
                 </div>
               </Link>
-              <Link to="/login" onClick={() => setIsMenuOpen(false)} className="bg-primary text-white text-center py-2 rounded-lg font-bold">
-                Login
-              </Link>
+              {user && user.role === 'restaurant_owner' && (
+                <Link
+                  to="/restaurants"
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-center py-2 rounded-lg font-semibold text-secondary"
+                >
+                  Manage Restaurant
+                </Link>
+              )}
+              {user ? (
+                <button
+                  onClick={() => {
+                    logout();
+                    setIsMenuOpen(false);
+                  }}
+                  className="bg-primary text-white text-center py-2 rounded-lg font-bold"
+                >
+                  Logout
+                </button>
+              ) : (
+                <Link to="/login" onClick={() => setIsMenuOpen(false)} className="bg-primary text-white text-center py-2 rounded-lg font-bold">
+                  Login
+                </Link>
+              )}
             </div>
           </motion.div>
         )}

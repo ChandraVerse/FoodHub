@@ -3,6 +3,7 @@ import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
 
 const Signup = () => {
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -11,6 +12,7 @@ const Signup = () => {
     }
   });
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   const onSubmit = async (data) => {
     try {
@@ -32,10 +34,17 @@ const Signup = () => {
       }
 
       const body = await response.json().catch(() => null);
-      if (typeof window !== 'undefined') {
-        window.alert('Signup successful. Please login to continue.');
+      if (body && body.userId && body.role) {
+        login({
+          id: body.userId,
+          role: body.role,
+          email: data.email
+        });
       }
-      navigate('/login');
+      if (typeof window !== 'undefined') {
+        window.alert('Signup successful.');
+      }
+      navigate('/');
     } catch (e) {
       if (typeof window !== 'undefined') {
         window.alert('Could not connect to server. Please make sure the backend is running.');

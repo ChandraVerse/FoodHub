@@ -12,12 +12,35 @@ const Signup = () => {
   });
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Simulate signup
-    setTimeout(() => {
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        const message = errorBody?.message || 'Signup failed. Please try again.';
+        if (typeof window !== 'undefined') {
+          window.alert(message);
+        }
+        return;
+      }
+
+      const body = await response.json().catch(() => null);
+      if (typeof window !== 'undefined') {
+        window.alert('Signup successful. Please login to continue.');
+      }
       navigate('/login');
-    }, 1000);
+    } catch (e) {
+      if (typeof window !== 'undefined') {
+        window.alert('Could not connect to server. Please make sure the backend is running.');
+      }
+    }
   };
 
   return (

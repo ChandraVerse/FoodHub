@@ -8,12 +8,35 @@ const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
 
-  const onSubmit = (data) => {
-    console.log(data);
-    // Simulate login
-    setTimeout(() => {
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch('http://localhost:8080/api/auth/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      });
+
+      if (!response.ok) {
+        const errorBody = await response.json().catch(() => null);
+        const message = errorBody?.message || 'Login failed. Please check your credentials.';
+        if (typeof window !== 'undefined') {
+          window.alert(message);
+        }
+        return;
+      }
+
+      const body = await response.json().catch(() => null);
+      if (typeof window !== 'undefined') {
+        window.alert('Login successful.');
+      }
       navigate('/');
-    }, 1000);
+    } catch (e) {
+      if (typeof window !== 'undefined') {
+        window.alert('Could not connect to server. Please make sure the backend is running.');
+      }
+    }
   };
 
   return (

@@ -5,7 +5,11 @@ import { Mail, Lock, User, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Signup = () => {
-  const { register, handleSubmit, formState: { errors } } = useForm();
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      role: 'customer'
+    }
+  });
   const navigate = useNavigate();
 
   const onSubmit = (data) => {
@@ -32,7 +36,7 @@ const Signup = () => {
           </p>
         </div>
         <form className="mt-8 space-y-4" onSubmit={handleSubmit(onSubmit)}>
-          
+
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
               <User size={20} />
@@ -44,6 +48,32 @@ const Signup = () => {
               placeholder="Full Name"
             />
             {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name.message}</p>}
+          </div>
+
+          <div>
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+              Sign up as
+            </p>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-hover px-3 py-2 cursor-pointer text-sm text-gray-700 dark:text-gray-200 hover:border-primary transition-colors">
+                <input
+                  type="radio"
+                  value="customer"
+                  {...register('role', { required: true })}
+                  className="text-primary focus:ring-primary"
+                />
+                <span>Customer</span>
+              </label>
+              <label className="flex items-center gap-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-hover px-3 py-2 cursor-pointer text-sm text-gray-700 dark:text-gray-200 hover:border-primary transition-colors">
+                <input
+                  type="radio"
+                  value="restaurant_owner"
+                  {...register('role', { required: true })}
+                  className="text-primary focus:ring-primary"
+                />
+                <span>Restaurant Owner</span>
+              </label>
+            </div>
           </div>
 
           <div className="relative">

@@ -1,72 +1,179 @@
 # 🍔 FoodHub - Multiple Restaurant Ordering Platform
 
-Welcome to **FoodHub**! This is the frontend for a modern, animated, and user-friendly multi-restaurant food ordering platform. Built with React and Tailwind CSS, it's designed to provide a seamless and enjoyable experience for discovering and ordering food from various restaurants.
+Welcome to **FoodHub**! This is a full‑stack multiple‑restaurant food ordering platform with:
 
-## ✨ Features
+- A modern, animated React frontend 🎨  
+- A secure Spring Boot + MongoDB backend 🔐  
+- Cloud database connectivity via MongoDB Atlas ☁️  
 
-*   **Modern & Animated UI:** A clean and beautiful interface with smooth, delightful animations powered by [Framer Motion](https://www.framer.com/motion/).
-*   **Dynamic Hero Section:** A stunning hero section featuring animated, non-overlapping food cards that create a lively and engaging first impression.
-*   **Cuisine Discovery:** Explore a rich variety of cuisines like Indian, Chinese, Mexican, Italian, and Japanese, each presented with beautiful, high-quality images.
-*   **Restaurant Listings:** Browse a list of restaurants, complete with ratings, delivery times, and prices. Filter restaurants by cuisine to find exactly what you're craving.
-*   **Dark Mode 🌓:** A sleek dark mode for comfortable browsing in low-light conditions.
-*   **Login Prompts:** Users are prompted to log in before they can view a menu or proceed to checkout, ensuring a secure and personalized experience.
-*   **Responsive Design:** A fully responsive layout that looks great on all devices, from mobile phones to desktop computers.
+It’s designed to give users a smooth, fun experience discovering restaurants and placing orders, while giving restaurant owners a simple way to manage their presence.
 
-## 🚀 Tech Stack
+---
 
-This project is built with a modern and powerful tech stack:
+## ✨ Main Features
 
-*   **Framework:** [React](https://reactjs.org/) `18.x`
-*   **Build Tool:** [Vite](https://vitejs.dev/)
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-*   **Animations:** [Framer Motion](https://www.framer.com/motion/)
-*   **Routing:** [React Router](https://reactrouter.com/)
-*   **Icons:** [Lucide React](https://lucide.dev/guide/packages/lucide-react)
-*   **Linting:** [ESLint](https://eslint.org/)
+- **Modern & Animated UI** 💫  
+  Smooth page transitions and micro‑animations powered by **Framer Motion** for a polished user experience.
 
-## 🏁 Getting Started
+- **Multiple Restaurant Browsing** 🍽️  
+  View curated restaurant lists with name, cuisine, rating, delivery time, and price from the backend API.
 
-Follow these steps to get the project up and running on your local machine.
+- **Cuisine Discovery** 🌎  
+  Explore Indian, Chinese, Mexican, Italian, Japanese and more with visually rich cards.
 
-### Prerequisites
+- **Authentication (Signup + Login)** 🔑  
+  Users can sign up and log in using email/password. Passwords are securely hashed in MongoDB using **BCrypt**.
 
-Make sure you have the following software installed:
+- **Role‑Based Flows** 👥  
+  Users can sign up as **customer** or **restaurant_owner`, allowing future role‑specific dashboards and features.
 
-*   [Node.js](https://nodejs.org/) (v16 or later is recommended)
-*   [npm](https://www.npmjs.com/) (comes with Node.js)
+- **Dark Mode** 🌓  
+  Global theme toggle using a custom **ThemeContext**, so users can switch between light and dark.
 
-### Installation
+- **Cart & Ordering Flow (UI)** 🛒  
+  Frontend cart and ordering flow wired to context, ready to be connected to more advanced backend logic.
 
-1.  **Clone the repository:**
-    ```bash
-    git clone <repository-url>
-    ```
+- **Responsive Design** 📱💻  
+  Tailwind CSS ensures the app looks great on mobile, tablet, and desktop.
 
-2.  **Navigate to the project directory:**
-    ```bash
-    cd "Multiple Restaurant Site/frontend"
-    ```
+---
 
-3.  **Install the dependencies:**
-    ```bash
-    npm install
-    ```
+## 🧩 Tech Stack & What Each Part Does
 
-### Running the Development Server
+### Frontend 🖥️
 
-To start the local development server, run the following command from the `frontend` directory:
+- **React 18**  
+  Component‑based UI library for building interactive pages and stateful components.
+
+- **Vite** ⚡  
+  Fast dev server and bundler for instant feedback and optimized builds.
+
+- **Tailwind CSS** 🎨  
+  Utility‑first CSS for rapid styling with responsive and dark‑mode classes.
+
+- **Framer Motion**  
+  Handles the smooth animations on hero sections, cards, and page transitions.
+
+- **React Router**  
+  Manages client‑side routing between pages like Home, Login, Signup, Owner Dashboard, etc.
+
+- **Context APIs**  
+  - `AuthContext` – stores logged‑in user info (id, role, email) and login/logout helpers.  
+  - `ThemeContext` – controls light/dark mode across the app.
+
+- **Lucide Icons**  
+  Provides clean, modern icons for form inputs and navigation.
+
+### Backend ⚙️
+
+- **Spring Boot 3**  
+  Java framework powering the REST API, controllers, validation, and application startup.
+
+- **MongoDB + Spring Data MongoDB** 🍃  
+  - Models: `User`, `Restaurant` (stored as documents).  
+  - Repositories: `UserRepository`, `RestaurantRepository` for easy CRUD operations.  
+  - Cloud DB: connected via **MongoDB Atlas** using a connection string in `application.properties`.
+
+- **Authentication & Security** 🔒  
+  - `AuthController` exposes `/api/auth/signup` and `/api/auth/login`.  
+  - Uses **BCryptPasswordEncoder** to hash passwords before saving to MongoDB.  
+  - Basic validation with Jakarta Validation annotations (`@Email`, `@NotBlank`, `@Size`).
+
+- **CORS Configuration** 🌐  
+  - `WebConfig` globally allows the frontend origin `http://localhost:5173` to call the backend API.  
+  - Handles preflight `OPTIONS` requests and allows credentials/methods/headers.
+
+- **Health & Utility Endpoints** ❤️  
+  - `HealthController` → `/api/health` to confirm backend status.  
+  - `WelcomeController` → `/` with quick links to main routes.  
+  - `GlobalErrorController` → `/error` to give friendly messages for unknown paths.
+
+---
+
+## 🧑‍💻 How To Run The Project Locally
+
+### 1. Prerequisites
+
+Make sure you have:
+
+- [Node.js](https://nodejs.org/) (v16+ recommended)  
+- [npm](https://www.npmjs.com/) (comes with Node)  
+- [Java 17+](https://adoptium.net/) (project currently runs on Java 25 in dev logs)  
+- A free [MongoDB Atlas](https://www.mongodb.com/atlas/database) cluster (or update the connection string accordingly)
+
+---
+
+### 2. Clone The Repository
 
 ```bash
+git clone <repository-url>
+cd "Multiple Restaurant Site"
+```
+
+---
+
+### 3. Configure Backend (Spring Boot + MongoDB Atlas) 🔧
+
+1. Open `backend/src/main/resources/application.properties`  
+2. Make sure your MongoDB Atlas URI is set, for example:
+
+   ```properties
+   server.port=8080
+   spring.data.mongodb.uri=mongodb+srv://<user>:<password>@cluster0.your-id.mongodb.net/foodhub?retryWrites=true&w=majority&appName=Cluster0
+   ```
+
+3. Ensure your Atlas user, password, and database name (`foodhub`) are correct.
+
+4. From the project root:
+
+   ```bash
+   cd backend
+   mvn spring-boot:run
+   ```
+
+   Backend runs at: `http://localhost:8080` 🚀  
+
+Key backend endpoints:
+
+- `GET /` – basic welcome + links  
+- `GET /api/health` – health check  
+- `GET /api/restaurants` – restaurant list  
+- `POST /api/auth/signup` – user signup  
+- `POST /api/auth/login` – user login  
+
+---
+
+### 4. Run Frontend (React + Vite) 🎯
+
+In a second terminal:
+
+```bash
+cd "Multiple Restaurant Site/frontend"
+npm install
 npm run dev
 ```
 
-The application will be available at `http://localhost:5173`. The server will automatically reload when you make changes to the code.
+The frontend will be available at: `http://localhost:5173`
 
-## scripts Available Scripts
+The app is already configured to talk to the backend at `http://localhost:8080` with CORS enabled, so signup and login should work when both servers are running.
 
-Inside the `frontend` directory, you can run the following scripts:
+---
 
-*   `npm run dev`: 🚀 Starts the development server with hot-reloading.
-*   `npm run build`: 📦 Builds the application for production into the `dist` folder.
-*   `npm run lint`: 🔍 Lints the code to find and fix problems.
-*   `npm run preview`: 🌐 Serves the production build locally to preview before deploying.
+## 📜 Frontend Scripts
+
+Inside the `frontend` directory, you can run:
+
+- `npm run dev` – 🚀 Start the development server with hot‑reload.  
+- `npm run build` – 📦 Build the app for production into `dist`.  
+- `npm run lint` – 🔍 Lint the code to catch common issues.  
+- `npm run preview` – 🌐 Preview the production build locally.
+
+---
+
+## ✅ How Users Benefit
+
+- **Fast discovery** – Quickly browse restaurants and cuisines in a clean, responsive UI.  
+- **Smooth experience** – Animations and dark mode make the app feel modern and enjoyable.  
+- **Secure accounts** – Passwords are hashed and stored securely in MongoDB Atlas.  
+- **Cloud‑ready** – Backend and database are ready to be deployed to cloud platforms.  
+- **Extendable** – Clear separation of frontend and backend makes it easy to add features like orders, payments, and owner dashboards in the future. ✨

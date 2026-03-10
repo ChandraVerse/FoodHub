@@ -50,10 +50,10 @@ const Header = () => {
           </Link>
           {user && user.role === 'restaurant_owner' && (
             <Link
-              to="/restaurants"
+              to="/owner"
               className="px-4 py-2 rounded-full bg-secondary/10 text-secondary hover:bg-secondary hover:text-white font-semibold transition-colors text-sm"
             >
-              Manage Restaurant
+              Owner Dashboard
             </Link>
           )}
           {user ? (
@@ -119,11 +119,11 @@ const Header = () => {
               </Link>
               {user && user.role === 'restaurant_owner' && (
                 <Link
-                  to="/restaurants"
+                  to="/owner"
                   onClick={() => setIsMenuOpen(false)}
                   className="text-center py-2 rounded-lg font-semibold text-secondary"
                 >
-                  Manage Restaurant
+                  Owner Dashboard
                 </Link>
               )}
               {user ? (

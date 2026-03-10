@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BarChart2, ClipboardList, Utensils, Store } from 'lucide-react';
@@ -7,6 +7,9 @@ import { useAuth } from '../context/AuthContext';
 const OwnerDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [restaurants, setRestaurants] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const isOwner = user && user.role === 'restaurant_owner';
 
@@ -20,24 +23,71 @@ const OwnerDashboard = () => {
     []
   );
 
-  const restaurants = [
-    {
-      id: 1,
-      name: 'Bombay Darbar',
-      cuisine: 'Indian',
-      status: 'Open',
-      items: 8,
-      highlighted: true
-    },
-    {
-      id: 2,
-      name: 'Casa Mexicana',
-      cuisine: 'Mexican',
-      status: 'Closed',
-      items: 10,
-      highlighted: false
+  useEffect(() => {
+    if (!isOwner) {
+      return;
     }
-  ];
+
+    const loadRestaurants = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/owner/restaurants');
+        if (!response.ok) {
+          throw new Error();
+        }
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setRestaurants(
+            data.map((r) => ({
+              id: r.id || r._id,
+              name: r.name,
+              cuisine: r.cuisine,
+              status: 'Open',
+              items: 0
+            }))
+          );
+        } else {
+          setRestaurants([
+            {
+              id: 1,
+              name: 'Bombay Darbar',
+              cuisine: 'Indian',
+              status: 'Open',
+              items: 8
+            },
+            {
+              id: 2,
+              name: 'Casa Mexicana',
+              cuisine: 'Mexican',
+              status: 'Closed',
+              items: 10
+            }
+          ]);
+        }
+      } catch (e) {
+        setError('Could not load restaurants from backend. Showing sample data.');
+        setRestaurants([
+          {
+            id: 1,
+            name: 'Bombay Darbar',
+            cuisine: 'Indian',
+            status: 'Open',
+            items: 8
+          },
+          {
+            id: 2,
+            name: 'Casa Mexicana',
+            cuisine: 'Mexican',
+            status: 'Closed',
+            items: 10
+          }
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadRestaurants();
+  }, [isOwner]);
 
   if (!isOwner) {
     return (
@@ -117,6 +167,19 @@ const OwnerDashboard = () => {
             </button>
           </div>
           <div className="space-y-3">
+            {loading && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Loading restaurants…</p>
+            )}
+            {!loading && restaurants.length === 0 && (
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                No restaurants found. Use “Add restaurant” to create one.
+              </p>
+            )}
+            {error && (
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                {error}
+              </p>
+            )}
             {restaurants.map((r) => (
               <div
                 key={r.id}
@@ -174,4 +237,3 @@ const OwnerDashboard = () => {
 };
 
 export default OwnerDashboard;
-

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api")
@@ -73,9 +74,8 @@ public class RestaurantController {
                 r5.setPrice("$35 for two");
 
                 List<Restaurant> initialRestaurants = Arrays.asList(r1, r2, r3, r4, r5);
-                repository.saveAll(initialRestaurants);
+                repository.saveAll(Objects.requireNonNull(initialRestaurants));
             }
         };
     }
 }
-

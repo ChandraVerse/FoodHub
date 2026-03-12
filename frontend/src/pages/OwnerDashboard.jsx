@@ -11,6 +11,7 @@ const OwnerDashboard = () => {
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
   const [showRestaurantForm, setShowRestaurantForm] = useState(false);
+  const [editingRestaurant, setEditingRestaurant] = useState(null);
   const [restaurantForm, setRestaurantForm] = useState({
     name: '',
     cuisine: '',
@@ -23,6 +24,7 @@ const OwnerDashboard = () => {
     coverImageUrl: ''
   });
   const [showMenuForm, setShowMenuForm] = useState(false);
+  const [editingMenuItem, setEditingMenuItem] = useState(null);
   const [menuForm, setMenuForm] = useState({
     id: null,
     name: '',
@@ -128,6 +130,7 @@ const OwnerDashboard = () => {
       price: '',
       coverImageUrl: ''
     });
+    setEditingRestaurant(null);
     setShowRestaurantForm(true);
   };
 
@@ -145,8 +148,12 @@ const OwnerDashboard = () => {
         coverImageUrl: restaurantForm.coverImageUrl,
         ownerId: user ? user.id : null
       };
-      const response = await fetch('http://localhost:8080/api/owner/restaurants', {
-        method: 'POST',
+      const url = editingRestaurant
+        ? `http://localhost:8080/api/owner/restaurants/${editingRestaurant.id}`
+        : 'http://localhost:8080/api/owner/restaurants';
+      const method = editingRestaurant ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
         headers: {
           'Content-Type': 'application/json'
         },
@@ -156,20 +163,84 @@ const OwnerDashboard = () => {
         throw new Error();
       }
       const saved = await response.json();
-      setRestaurants((prev) => [
-        ...prev,
-        {
-          id: saved.id,
-          name: saved.name,
-          cuisine: saved.cuisine,
-          status: 'Open',
-          items: 0
-        }
-      ]);
+      if (editingRestaurant) {
+        setRestaurants((prev) =>
+          prev.map((r) =>
+            r.id === editingRestaurant.id
+              ? {
+                  id: saved.id,
+                  name: saved.name,
+                  cuisine: saved.cuisine,
+                  status: r.status,
+                  items: r.items
+                }
+              : r
+          )
+        );
+      } else {
+        setRestaurants((prev) => [
+          ...prev,
+          {
+            id: saved.id,
+            name: saved.name,
+            cuisine: saved.cuisine,
+            status: 'Open',
+            items: 0
+          }
+        ]);
+      }
+      setEditingRestaurant(null);
       setShowRestaurantForm(false);
     } catch (e) {
       if (typeof window !== 'undefined') {
         window.alert('Could not save restaurant. Please try again.');
+      }
+    }
+  };
+
+  const openEditRestaurant = (restaurant) => {
+    setRestaurantForm({
+      name: restaurant.name || '',
+      cuisine: restaurant.cuisine || '',
+      description: restaurant.description || '',
+      address: restaurant.address || '',
+      city: restaurant.city || '',
+      pincode: restaurant.pincode || '',
+      phone: restaurant.phone || '',
+      price: restaurant.price || '',
+      coverImageUrl: restaurant.coverImageUrl || ''
+    });
+    setEditingRestaurant(restaurant);
+    setShowRestaurantForm(true);
+  };
+
+  const deleteRestaurant = async (restaurant) => {
+    if (typeof window !== 'undefined') {
+      const confirmed = window.confirm(
+        `Delete restaurant "${restaurant.name}"? This cannot be undone.`
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/owner/restaurants/${restaurant.id}`,
+        {
+          method: 'DELETE'
+        }
+      );
+      if (!response.ok && response.status !== 204) {
+        throw new Error();
+      }
+      setRestaurants((prev) => prev.filter((r) => r.id !== restaurant.id));
+      if (selectedRestaurant && selectedRestaurant.id === restaurant.id) {
+        setSelectedRestaurant(null);
+        setMenuItems([]);
+      }
+    } catch (e) {
+      if (typeof window !== 'undefined') {
+        window.alert('Could not delete restaurant. Please try again.');
       }
     }
   };
@@ -217,6 +288,7 @@ const OwnerDashboard = () => {
       veg: true,
       available: true
     });
+    setEditingMenuItem(null);
     setShowMenuForm(true);
   };
 
@@ -242,36 +314,101 @@ const OwnerDashboard = () => {
         veg: menuForm.veg,
         available: menuForm.available
       };
-      const response = await fetch(
-        `http://localhost:8080/api/owner/restaurants/${selectedRestaurant.id}/menu`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(body)
-        }
-      );
+      const url = editingMenuItem
+        ? `http://localhost:8080/api/owner/restaurants/${selectedRestaurant.id}/menu/${editingMenuItem.id}`
+        : `http://localhost:8080/api/owner/restaurants/${selectedRestaurant.id}/menu`;
+      const method = editingMenuItem ? 'PUT' : 'POST';
+      const response = await fetch(url, {
+        method,
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
       if (!response.ok) {
         throw new Error();
       }
       const saved = await response.json();
-      setMenuItems((prev) => [
-        ...prev,
-        {
-          id: saved.id,
-          name: saved.name,
-          category: saved.category,
-          price: saved.price,
-          imageUrl: saved.imageUrl,
-          veg: saved.veg,
-          available: saved.available
-        }
-      ]);
+      if (editingMenuItem) {
+        setMenuItems((prev) =>
+          prev.map((item) =>
+            item.id === editingMenuItem.id
+              ? {
+                  id: saved.id,
+                  name: saved.name,
+                  category: saved.category,
+                  price: saved.price,
+                  imageUrl: saved.imageUrl,
+                  veg: saved.veg,
+                  available: saved.available
+                }
+              : item
+          )
+        );
+      } else {
+        setMenuItems((prev) => [
+          ...prev,
+          {
+            id: saved.id,
+            name: saved.name,
+            category: saved.category,
+            price: saved.price,
+            imageUrl: saved.imageUrl,
+            veg: saved.veg,
+            available: saved.available
+          }
+        ]);
+      }
+      setEditingMenuItem(null);
       setShowMenuForm(false);
     } catch (e) {
       if (typeof window !== 'undefined') {
         window.alert('Could not save menu item. Please try again.');
+      }
+    }
+  };
+
+  const openEditMenuItem = (item) => {
+    setMenuForm({
+      id: item.id,
+      name: item.name || '',
+      description: item.description || '',
+      category: item.category || '',
+      price: String(item.price ?? ''),
+      imageUrl: item.imageUrl || '',
+      veg: item.veg,
+      available: item.available
+    });
+    setEditingMenuItem(item);
+    setShowMenuForm(true);
+  };
+
+  const deleteMenuItem = async (item) => {
+    if (!selectedRestaurant) {
+      return;
+    }
+    if (typeof window !== 'undefined') {
+      const confirmed = window.confirm(
+        `Delete menu item "${item.name}"? This cannot be undone.`
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+    try {
+      const response = await fetch(
+        `http://localhost:8080/api/owner/restaurants/${selectedRestaurant.id}/menu/${item.id}`,
+        {
+          method: 'DELETE'
+        }
+      );
+      if (!response.ok && response.status !== 204) {
+        throw new Error();
+      }
+      setMenuItems((prev) => prev.filter((m) => m.id !== item.id));
+    } catch (e) {
+      if (typeof window !== 'undefined') {
+        window.alert('Could not delete menu item. Please try again.');
       }
     }
   };
@@ -383,7 +520,7 @@ const OwnerDashboard = () => {
                     {r.cuisine} • {r.items} items
                   </p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <span
                     className={`text-xs px-2.5 py-1 rounded-full font-semibold ${
                       r.status === 'Open'
@@ -399,13 +536,25 @@ const OwnerDashboard = () => {
                   >
                     Manage menu
                   </button>
+                  <button
+                    className="text-xs text-gray-600 dark:text-gray-300 hover:underline"
+                    onClick={() => openEditRestaurant(r)}
+                  >
+                    Edit
+                  </button>
+                  <button
+                    className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                    onClick={() => deleteRestaurant(r)}
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
           </div>
         </div>
         <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-light-border/80 dark:border-dark-border p-5 md:p-6">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Menu management</h2>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Menu management</h2>
           {!selectedRestaurant && (
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Select a restaurant and click Manage menu to view and edit items.
@@ -459,6 +608,18 @@ const OwnerDashboard = () => {
                       >
                         {item.available ? 'Available' : 'Unavailable'}
                       </span>
+                      <button
+                        className="text-xs text-primary hover:underline"
+                        onClick={() => openEditMenuItem(item)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="text-xs text-red-600 dark:text-red-400 hover:underline"
+                        onClick={() => deleteMenuItem(item)}
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 ))}

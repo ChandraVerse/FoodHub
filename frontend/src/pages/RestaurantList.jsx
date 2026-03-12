@@ -28,80 +28,7 @@ const RestaurantList = () => {
         const data = await response.json();
         setRestaurants(data);
       } catch (e) {
-        setRestaurants([
-          {
-            id: 1,
-            name: 'Bella Italia',
-            cuisine: 'Italian',
-            rating: 4.8,
-            time: '20-30 min',
-            price: '$20 for two',
-            image: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?auto=format&fit=crop&w=900&q=80'
-          },
-          {
-            id: 2,
-            name: 'Bombay Darbar',
-            cuisine: 'Indian',
-            rating: 4.7,
-            time: '25-35 min',
-            price: '$18 for two',
-            image: 'https://images.unsplash.com/photo-1604908176997-1251884b08a2?auto=format&fit=crop&w=900&q=80'
-          },
-          {
-            id: 3,
-            name: 'Dragon Wok',
-            cuisine: 'Chinese',
-            rating: 4.6,
-            time: '30-40 min',
-            price: '$22 for two',
-            image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=900&q=80'
-          },
-          {
-            id: 4,
-            name: 'Casa Mexicana',
-            cuisine: 'Mexican',
-            rating: 4.5,
-            time: '20-30 min',
-            price: '$19 for two',
-            image: 'https://images.unsplash.com/photo-1601924582971-dfdf0f3f357f?auto=format&fit=crop&w=900&q=80'
-          },
-          {
-            id: 5,
-            name: 'Osaka Sushi Bar',
-            cuisine: 'Japanese',
-            rating: 4.9,
-            time: '35-45 min',
-            price: '$35 for two',
-            image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=900&q=80'
-          },
-          {
-            id: 6,
-            name: 'Burger Hub',
-            cuisine: 'Burger',
-            rating: 4.3,
-            time: '15-25 min',
-            price: '$16 for two',
-            image: 'https://images.unsplash.com/photo-1546069901-5ec6a79120b0?auto=format&fit=crop&w=900&q=80'
-          },
-          {
-            id: 7,
-            name: 'Sweet Treats',
-            cuisine: 'Dessert',
-            rating: 4.7,
-            time: '10-20 min',
-            price: '$14 for two',
-            image: 'https://images.unsplash.com/photo-1542826438-bd32f43b01c5?auto=format&fit=crop&w=900&q=80'
-          },
-          {
-            id: 8,
-            name: 'Veggie Bowl Co.',
-            cuisine: 'Healthy',
-            rating: 4.4,
-            time: '20-30 min',
-            price: '$17 for two',
-            image: 'https://images.unsplash.com/photo-1546069901-d5bfd2cbfb1f?auto=format&fit=crop&w=900&q=80'
-          }
-        ]);
+        setRestaurants([]);
       }
     };
 
@@ -115,7 +42,12 @@ const RestaurantList = () => {
   return (
     <div className="bg-light-bg dark:bg-dark-bg min-h-screen py-8 transition-colors duration-300">
       <div className="container mx-auto px-4">
-        <h1 className="text-3xl font-bold mb-8 text-gray-900 dark:text-white">Restaurants Near You</h1>
+        <h1 className="text-3xl font-bold mb-4 text-gray-900 dark:text-white">Restaurants Near You</h1>
+        {restaurants.length === 0 && (
+          <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+            No restaurants are live yet. Once an owner adds a restaurant, it will appear here.
+          </p>
+        )}
         
         {/* Filters */}
         <div className="flex gap-4 mb-8 overflow-x-auto pb-2 scrollbar-hide">

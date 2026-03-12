@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react';
 import { Star, Clock, DollarSign } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 const RestaurantList = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('All');
   const [restaurants, setRestaurants] = useState([]);
 
   const fallbackFoodImage =
     'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260"><rect width="100%25" height="100%25" fill="%231F2933"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="system-ui" font-size="20">Restaurant%20Image</text></svg>';
 
-  const handleViewMenuClick = () => {
-    if (typeof window !== 'undefined') {
-      window.alert('Please login as a customer to view the menu.');
+  const handleViewMenuClick = (id) => {
+    if (!id) {
+      return;
     }
+    navigate(`/restaurants/${id}`);
   };
 
   useEffect(() => {
@@ -178,7 +181,7 @@ const RestaurantList = () => {
                     <span>{item.price}</span>
                   </div>
                   <button
-                    onClick={handleViewMenuClick}
+                    onClick={() => handleViewMenuClick(item.id)}
                     className="text-primary font-semibold hover:underline text-sm"
                   >
                     View Menu

@@ -3,6 +3,7 @@ D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\c
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\AuthController.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\GlobalErrorController.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\HealthController.java
+D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\MenuController.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\OrderController.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\OwnerMenuController.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\OwnerMetricsController.java

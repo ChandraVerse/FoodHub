@@ -8,6 +8,31 @@ const OwnerDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [restaurants, setRestaurants] = useState([]);
+  const [selectedRestaurant, setSelectedRestaurant] = useState(null);
+  const [menuItems, setMenuItems] = useState([]);
+  const [showRestaurantForm, setShowRestaurantForm] = useState(false);
+  const [restaurantForm, setRestaurantForm] = useState({
+    name: '',
+    cuisine: '',
+    description: '',
+    address: '',
+    city: '',
+    pincode: '',
+    phone: '',
+    price: '',
+    coverImageUrl: ''
+  });
+  const [showMenuForm, setShowMenuForm] = useState(false);
+  const [menuForm, setMenuForm] = useState({
+    id: null,
+    name: '',
+    description: '',
+    category: '',
+    price: '',
+    imageUrl: '',
+    veg: true,
+    available: true
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -89,6 +114,174 @@ const OwnerDashboard = () => {
     loadRestaurants();
   }, [isOwner]);
 
+  const handleRestaurantFormChange = (event) => {
+    const { name, value } = event.target;
+    setRestaurantForm((prev) => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const openCreateRestaurant = () => {
+    setRestaurantForm({
+      name: '',
+      cuisine: '',
+      description: '',
+      address: '',
+      city: '',
+      pincode: '',
+      phone: '',
+      price: '',
+      coverImageUrl: ''
+    });
+    setShowRestaurantForm(true);
+  };
+
+  const saveRestaurant = async () => {
+    try {
+      const body = {
+        name: restaurantForm.name,
+        cuisine: restaurantForm.cuisine,
+        description: restaurantForm.description,
+        address: restaurantForm.address,
+        city: restaurantForm.city,
+        pincode: restaurantForm.pincode,
+        phone: restaurantForm.phone,
+        price: restaurantForm.price,
+        coverImageUrl: restaurantForm.coverImageUrl,
+        ownerId: user ? user.id : null
+      };
+      const response = await fetch('http://localhost:8080/api/owner/restaurants', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      if (!response.ok) {
+        throw new Error();
+      }
+      const saved = await response.json();
+      setRestaurants((prev) => [
+        ...prev,
+        {
+          id: saved.id,
+          name: saved.name,
+          cuisine: saved.cuisine,
+          status: 'Open',
+          items: 0
+        }
+      ]);
+      setShowRestaurantForm(false);
+    } catch (e) {
+      if (typeof window !== 'undefined') {
+        window.alert('Could not save restaurant. Please try again.');
+      }
+    }
+  };
+
+  const loadMenuItems = async (restaurant) => {
+    setSelectedRestaurant(restaurant);
+    setMenuItems([]);
+    try {
+      const response = await fetch(`http://localhost:8080/api/owner/restaurants/${restaurant.id}/menu`);
+      if (!response.ok) {
+        throw new Error();
+      }
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setMenuItems(
+          data.map((item) => ({
+            id: item.id,
+            name: item.name,
+            category: item.category,
+            price: item.price,
+            imageUrl: item.imageUrl,
+            veg: item.veg,
+            available: item.available
+          }))
+        );
+      }
+    } catch (e) {
+      if (typeof window !== 'undefined') {
+        window.alert('Could not load menu items. Please try again.');
+      }
+    }
+  };
+
+  const openCreateMenuItem = () => {
+    if (!selectedRestaurant) {
+      return;
+    }
+    setMenuForm({
+      id: null,
+      name: '',
+      description: '',
+      category: '',
+      price: '',
+      imageUrl: '',
+      veg: true,
+      available: true
+    });
+    setShowMenuForm(true);
+  };
+
+  const handleMenuFormChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    setMenuForm((prev) => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
+  };
+
+  const saveMenuItem = async () => {
+    if (!selectedRestaurant) {
+      return;
+    }
+    try {
+      const body = {
+        name: menuForm.name,
+        description: menuForm.description,
+        category: menuForm.category,
+        price: parseFloat(menuForm.price || '0'),
+        imageUrl: menuForm.imageUrl,
+        veg: menuForm.veg,
+        available: menuForm.available
+      };
+      const response = await fetch(
+        `http://localhost:8080/api/owner/restaurants/${selectedRestaurant.id}/menu`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(body)
+        }
+      );
+      if (!response.ok) {
+        throw new Error();
+      }
+      const saved = await response.json();
+      setMenuItems((prev) => [
+        ...prev,
+        {
+          id: saved.id,
+          name: saved.name,
+          category: saved.category,
+          price: saved.price,
+          imageUrl: saved.imageUrl,
+          veg: saved.veg,
+          available: saved.available
+        }
+      ]);
+      setShowMenuForm(false);
+    } catch (e) {
+      if (typeof window !== 'undefined') {
+        window.alert('Could not save menu item. Please try again.');
+      }
+    }
+  };
+
   if (!isOwner) {
     return (
       <div className="container mx-auto px-4 py-16">
@@ -162,7 +355,10 @@ const OwnerDashboard = () => {
         <div className="md:col-span-2 bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-light-border/80 dark:border-dark-border p-5 md:p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-gray-900 dark:text-white">Your restaurants</h2>
-            <button className="text-sm font-semibold text-primary hover:underline">
+            <button
+              className="text-sm font-semibold text-primary hover:underline"
+              onClick={openCreateRestaurant}
+            >
               + Add restaurant
             </button>
           </div>
@@ -203,7 +399,10 @@ const OwnerDashboard = () => {
                   >
                     {r.status}
                   </span>
-                  <button className="text-xs md:text-sm font-semibold text-primary hover:underline">
+                  <button
+                    className="text-xs md:text-sm font-semibold text-primary hover:underline"
+                    onClick={() => loadMenuItems(r)}
+                  >
                     Manage menu
                   </button>
                 </div>
@@ -212,26 +411,244 @@ const OwnerDashboard = () => {
           </div>
         </div>
         <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-light-border/80 dark:border-dark-border p-5 md:p-6">
-          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Today overview</h2>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-            This is sample data. Connect to the backend to view live analytics.
-          </p>
-          <ul className="space-y-3 text-sm text-gray-700 dark:text-gray-200">
-            <li className="flex justify-between">
-              <span>Pending orders</span>
-              <span className="font-semibold">4</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Completed orders</span>
-              <span className="font-semibold">8</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Average rating</span>
-              <span className="font-semibold">4.6 ★</span>
-            </li>
-          </ul>
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Menu management</h2>
+          {!selectedRestaurant && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Select a restaurant and click Manage menu to view and edit items.
+            </p>
+          )}
+          {selectedRestaurant && (
+            <>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Restaurant</p>
+                  <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                    {selectedRestaurant.name}
+                  </p>
+                </div>
+                <button
+                  className="text-xs font-semibold text-primary hover:underline"
+                  onClick={openCreateMenuItem}
+                >
+                  + Add menu item
+                </button>
+              </div>
+              {menuItems.length === 0 && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  No menu items yet. Add your first dish.
+                </p>
+              )}
+              <div className="mt-2 space-y-2 max-h-64 overflow-y-auto">
+                {menuItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between rounded-lg border border-light-border/80 dark:border-dark-border px-3 py-2"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        {item.category} • ₹{item.price}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs px-2 py-0.5 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200">
+                        {item.veg ? 'Veg' : 'Non-veg'}
+                      </span>
+                      <span
+                        className={`text-xs px-2 py-0.5 rounded-full ${
+                          item.available
+                            ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300'
+                            : 'bg-gray-200 text-gray-700 dark:bg-gray-600/40 dark:text-gray-200'
+                        }`}
+                      >
+                        {item.available ? 'Available' : 'Unavailable'}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
         </div>
       </div>
+
+      {showRestaurantForm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-40">
+          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg border border-light-border/80 dark:border-dark-border w-full max-w-lg p-6">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Add restaurant
+            </h2>
+            <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+              <input
+                name="name"
+                value={restaurantForm.name}
+                onChange={handleRestaurantFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Restaurant name"
+              />
+              <input
+                name="cuisine"
+                value={restaurantForm.cuisine}
+                onChange={handleRestaurantFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Cuisine (e.g. Indian, Italian)"
+              />
+              <textarea
+                name="description"
+                value={restaurantForm.description}
+                onChange={handleRestaurantFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Short description"
+                rows={3}
+              />
+              <input
+                name="address"
+                value={restaurantForm.address}
+                onChange={handleRestaurantFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Street address"
+              />
+              <div className="grid grid-cols-3 gap-3">
+                <input
+                  name="city"
+                  value={restaurantForm.city}
+                  onChange={handleRestaurantFormChange}
+                  className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="City"
+                />
+                <input
+                  name="pincode"
+                  value={restaurantForm.pincode}
+                  onChange={handleRestaurantFormChange}
+                  className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Pincode"
+                />
+                <input
+                  name="phone"
+                  value={restaurantForm.phone}
+                  onChange={handleRestaurantFormChange}
+                  className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Phone"
+                />
+              </div>
+              <input
+                name="price"
+                value={restaurantForm.price}
+                onChange={handleRestaurantFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Average price (e.g. ₹300 for two)"
+              />
+              <input
+                name="coverImageUrl"
+                value={restaurantForm.coverImageUrl}
+                onChange={handleRestaurantFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Cover image URL"
+              />
+            </div>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+                onClick={() => setShowRestaurantForm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary-hover"
+                onClick={saveRestaurant}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showMenuForm && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-40">
+          <div className="bg-white dark:bg-dark-card rounded-2xl shadow-lg border border-light-border/80 dark:border-dark-border w-full max-w-lg p-6">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+              Add menu item
+            </h2>
+            <div className="space-y-3 max-h-[70vh] overflow-y-auto">
+              <input
+                name="name"
+                value={menuForm.name}
+                onChange={handleMenuFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Dish name"
+              />
+              <textarea
+                name="description"
+                value={menuForm.description}
+                onChange={handleMenuFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Description"
+                rows={3}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  name="category"
+                  value={menuForm.category}
+                  onChange={handleMenuFormChange}
+                  className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Category (e.g. Starters)"
+                />
+                <input
+                  name="price"
+                  value={menuForm.price}
+                  onChange={handleMenuFormChange}
+                  className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Price (₹)"
+                />
+              </div>
+              <input
+                name="imageUrl"
+                value={menuForm.imageUrl}
+                onChange={handleMenuFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Image URL"
+              />
+              <div className="flex items-center gap-4 text-sm text-gray-800 dark:text-gray-200">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="veg"
+                    checked={menuForm.veg}
+                    onChange={handleMenuFormChange}
+                  />
+                  <span>Veg</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="available"
+                    checked={menuForm.available}
+                    onChange={handleMenuFormChange}
+                  />
+                  <span>Available</span>
+                </label>
+              </div>
+            </div>
+            <div className="mt-4 flex justify-end gap-3">
+              <button
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-gray-700 dark:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
+                onClick={() => setShowMenuForm(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="px-4 py-2 rounded-lg text-sm font-semibold text-white bg-primary hover:bg-primary-hover"
+                onClick={saveMenuItem}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

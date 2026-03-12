@@ -27,13 +27,6 @@ public class RestaurantController {
         return restaurantRepository.findAll();
     }
 
-    @GetMapping("/owner/restaurants")
-    public List<Restaurant> getOwnerRestaurants() {
-        // For now this returns all restaurants as placeholder data.
-        // Later this can be filtered by authenticated owner.
-        return restaurantRepository.findAll();
-    }
-
     @Bean
     CommandLineRunner seedRestaurants(RestaurantRepository repository) {
         return args -> {

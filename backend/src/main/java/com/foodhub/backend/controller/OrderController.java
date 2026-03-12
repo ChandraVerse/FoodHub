@@ -69,7 +69,11 @@ public class OrderController {
 
     @GetMapping("/owner/restaurants/{restaurantId}/orders")
     public ResponseEntity<?> getRestaurantOrders(Authentication authentication, @PathVariable @NonNull String restaurantId) {
-        String ownerId = (String) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof String ownerId) || ownerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Unauthorized"));
+        }
         Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
         if (restaurant.isEmpty() || restaurant.get().getOwnerId() == null ||
                 !restaurant.get().getOwnerId().equals(ownerId)) {

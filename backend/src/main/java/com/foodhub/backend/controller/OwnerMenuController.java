@@ -27,7 +27,10 @@ public class OwnerMenuController {
     }
 
     private boolean ownerCanAccess(Authentication authentication, String restaurantId) {
-        String ownerId = (String) authentication.getPrincipal();
+        Object principal = authentication.getPrincipal();
+        if (!(principal instanceof String ownerId) || ownerId == null) {
+            return false;
+        }
         Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
         return restaurant.isPresent()
                 && restaurant.get().getOwnerId() != null

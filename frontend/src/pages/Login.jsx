@@ -30,11 +30,12 @@ const Login = () => {
       }
 
       const body = await response.json().catch(() => null);
-      if (body && body.userId && body.role) {
+      if (body && body.userId && body.role && body.token) {
         login({
           id: body.userId,
           role: body.role,
-          email: data.email
+          email: data.email,
+          token: body.token
         });
       }
       if (typeof window !== 'undefined') {

@@ -1,11 +1,13 @@
 package com.foodhub.backend.controller;
 
 import com.foodhub.backend.model.Order;
+import com.foodhub.backend.model.Restaurant;
 import com.foodhub.backend.repository.OrderRepository;
 import com.foodhub.backend.repository.RestaurantRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -35,13 +37,13 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "At least one item is required"));
         }
-        Optional<com.foodhub.backend.model.Restaurant> restaurant =
+        Optional<Restaurant> restaurant =
                 restaurantRepository.findById(order.getRestaurantId());
         if (restaurant.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "Restaurant not found"));
         }
-        com.foodhub.backend.model.Restaurant r = restaurant.get();
+        Restaurant r = restaurant.get();
         order.setOwnerId(r.getOwnerId());
         double total = order.getItems().stream()
                 .mapToDouble(i -> i.getPrice() * i.getQuantity())
@@ -66,9 +68,15 @@ public class OrderController {
     }
 
     @GetMapping("/owner/restaurants/{restaurantId}/orders")
-    public ResponseEntity<?> getRestaurantOrders(@PathVariable @NonNull String restaurantId) {
+    public ResponseEntity<?> getRestaurantOrders(Authentication authentication, @PathVariable @NonNull String restaurantId) {
+        String ownerId = (String) authentication.getPrincipal();
+        Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
+        if (restaurant.isEmpty() || restaurant.get().getOwnerId() == null ||
+                !restaurant.get().getOwnerId().equals(ownerId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Not allowed to view orders for this restaurant"));
+        }
         List<Order> orders = orderRepository.findByRestaurantIdOrderByCreatedAtDesc(restaurantId);
         return ResponseEntity.ok(orders);
     }
 }
-

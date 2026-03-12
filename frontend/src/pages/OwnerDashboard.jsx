@@ -40,6 +40,9 @@ const OwnerDashboard = () => {
 
   const isOwner = user && user.role === 'restaurant_owner';
 
+  const [ordersToday, setOrdersToday] = useState(0);
+  const [monthlyRevenue, setMonthlyRevenue] = useState(0);
+
   const stats = useMemo(
     () => [
       {
@@ -56,18 +59,18 @@ const OwnerDashboard = () => {
       },
       {
         label: 'Orders Today',
-        value: 0,
+        value: ordersToday,
         icon: ClipboardList,
         color: 'from-emerald-100/40 to-emerald-50/40'
       },
       {
         label: 'Monthly Revenue',
-        value: '₹ 0',
+        value: `₹ ${monthlyRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
         icon: BarChart2,
         color: 'from-amber-100/40 to-amber-50/40'
       }
     ],
-    [restaurants.length, selectedRestaurant, menuItems.length]
+    [restaurants.length, selectedRestaurant, menuItems.length, ordersToday, monthlyRevenue]
   );
 
   useEffect(() => {
@@ -75,9 +78,21 @@ const OwnerDashboard = () => {
       return;
     }
 
+    const token = user?.token;
+
+    const commonHeaders = token
+      ? {
+          Authorization: `Bearer ${token}`
+        }
+      : {};
+
     const loadRestaurants = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/owner/restaurants');
+        const response = await fetch('http://localhost:8080/api/owner/restaurants', {
+          headers: {
+            ...commonHeaders
+          }
+        });
         if (!response.ok) {
           throw new Error();
         }
@@ -107,8 +122,32 @@ const OwnerDashboard = () => {
       }
     };
 
+    const loadMetrics = async () => {
+      try {
+        const response = await fetch('http://localhost:8080/api/owner/metrics', {
+          headers: {
+            ...commonHeaders
+          }
+        });
+        if (!response.ok) {
+          return;
+        }
+        const body = await response.json().catch(() => null);
+        if (body) {
+          if (typeof body.ordersToday === 'number') {
+            setOrdersToday(body.ordersToday);
+          }
+          if (typeof body.monthlyRevenue === 'number') {
+            setMonthlyRevenue(body.monthlyRevenue);
+          }
+        }
+      } catch {
+      }
+    };
+
     loadRestaurants();
-  }, [isOwner]);
+    loadMetrics();
+  }, [isOwner, user]);
 
   const handleRestaurantFormChange = (event) => {
     const { name, value } = event.target;
@@ -136,6 +175,7 @@ const OwnerDashboard = () => {
 
   const saveRestaurant = async () => {
     try {
+      const token = user?.token;
       const body = {
         name: restaurantForm.name,
         cuisine: restaurantForm.cuisine,
@@ -155,7 +195,8 @@ const OwnerDashboard = () => {
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(body)
       });
@@ -224,10 +265,12 @@ const OwnerDashboard = () => {
       }
     }
     try {
+      const token = user?.token;
       const response = await fetch(
         `http://localhost:8080/api/owner/restaurants/${restaurant.id}`,
         {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
         }
       );
       if (!response.ok && response.status !== 204) {
@@ -305,6 +348,7 @@ const OwnerDashboard = () => {
       return;
     }
     try {
+      const token = user?.token;
       const body = {
         name: menuForm.name,
         description: menuForm.description,
@@ -321,7 +365,8 @@ const OwnerDashboard = () => {
       const response = await fetch(url, {
         method,
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
         },
         body: JSON.stringify(body)
       });
@@ -396,10 +441,12 @@ const OwnerDashboard = () => {
       }
     }
     try {
+      const token = user?.token;
       const response = await fetch(
         `http://localhost:8080/api/owner/restaurants/${selectedRestaurant.id}/menu/${item.id}`,
         {
-          method: 'DELETE'
+          method: 'DELETE',
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
         }
       );
       if (!response.ok && response.status !== 204) {

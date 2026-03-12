@@ -1,3 +1,4 @@
+D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\config\SecurityConfig.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\config\WebConfig.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\AuthController.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\controller\GlobalErrorController.java
@@ -18,3 +19,5 @@ D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\r
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\repository\OrderRepository.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\repository\RestaurantRepository.java
 D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\repository\UserRepository.java
+D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\security\JwtAuthenticationFilter.java
+D:\Projects\Multiple Restaurant Site\backend\src\main\java\com\foodhub\backend\security\JwtService.java

@@ -2,6 +2,7 @@ package com.foodhub.backend.controller;
 
 import com.foodhub.backend.model.User;
 import com.foodhub.backend.repository.UserRepository;
+import com.foodhub.backend.security.JwtService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -23,9 +24,11 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final JwtService jwtService;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository, JwtService jwtService) {
         this.userRepository = userRepository;
+        this.jwtService = jwtService;
     }
 
     public static class SignupRequest {
@@ -152,10 +155,15 @@ public class AuthController {
                     .body(Map.of("message", "Invalid email or password"));
         }
 
-        return ResponseEntity.ok(Map.of(
-                "message", "Login successful",
-                "userId", user.getId(),
-                "role", user.getRole()
-        ));
+        String token = jwtService.generateToken(user.getId(), user.getRole());
+
+        return ResponseEntity.ok(
+                Map.of(
+                        "message", "Login successful",
+                        "userId", user.getId(),
+                        "role", user.getRole(),
+                        "token", token
+                )
+        );
     }
 }

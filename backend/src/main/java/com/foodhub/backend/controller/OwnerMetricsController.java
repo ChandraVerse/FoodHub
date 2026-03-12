@@ -3,10 +3,9 @@ package com.foodhub.backend.controller;
 import com.foodhub.backend.model.Order;
 import com.foodhub.backend.repository.OrderRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.Instant;
@@ -27,7 +26,8 @@ public class OwnerMetricsController {
     }
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getMetrics(@RequestParam @NonNull String ownerId) {
+    public ResponseEntity<Map<String, Object>> getMetrics(Authentication authentication) {
+        String ownerId = (String) authentication.getPrincipal();
         LocalDate today = LocalDate.now(ZoneOffset.UTC);
         Instant startOfToday = today.atStartOfDay().toInstant(ZoneOffset.UTC);
         Instant startOfTomorrow = today.plusDays(1).atStartOfDay().toInstant(ZoneOffset.UTC);
@@ -52,4 +52,3 @@ public class OwnerMetricsController {
         return ResponseEntity.ok(body);
     }
 }
-

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -23,7 +24,9 @@ public class RestaurantController {
 
     @GetMapping("/restaurants")
     public List<Restaurant> getRestaurants() {
-        return restaurantRepository.findAll();
+        return restaurantRepository.findAll().stream()
+                .filter(r -> r.getOwnerId() != null && !r.getOwnerId().isBlank())
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/restaurants/{id}")

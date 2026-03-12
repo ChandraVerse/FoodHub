@@ -4,6 +4,7 @@ import com.foodhub.backend.model.Restaurant;
 import com.foodhub.backend.repository.RestaurantRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,13 +27,13 @@ public class OwnerRestaurantController {
     }
 
     @PostMapping
-    public ResponseEntity<?> createRestaurant(@RequestBody Restaurant restaurant) {
+    public ResponseEntity<?> createRestaurant(@RequestBody @NonNull Restaurant restaurant) {
         Restaurant saved = restaurantRepository.save(restaurant);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateRestaurant(@PathVariable String id, @RequestBody Restaurant update) {
+    public ResponseEntity<?> updateRestaurant(@PathVariable @NonNull String id, @RequestBody @NonNull Restaurant update) {
         Optional<Restaurant> optionalRestaurant = restaurantRepository.findById(id);
         if (optionalRestaurant.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Restaurant not found"));
@@ -55,7 +56,7 @@ public class OwnerRestaurantController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> deleteRestaurant(@PathVariable String id) {
+    public ResponseEntity<?> deleteRestaurant(@PathVariable @NonNull String id) {
         if (!restaurantRepository.existsById(id)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Restaurant not found"));
         }
@@ -63,4 +64,3 @@ public class OwnerRestaurantController {
         return ResponseEntity.noContent().build();
     }
 }
-

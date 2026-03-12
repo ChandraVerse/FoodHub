@@ -4,6 +4,7 @@ import com.foodhub.backend.model.MenuItem;
 import com.foodhub.backend.repository.MenuItemRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,19 +22,19 @@ public class OwnerMenuController {
     }
 
     @GetMapping
-    public List<MenuItem> getMenu(@PathVariable String restaurantId) {
+    public List<MenuItem> getMenu(@PathVariable @NonNull String restaurantId) {
         return menuItemRepository.findByRestaurantId(restaurantId);
     }
 
     @PostMapping
-    public ResponseEntity<?> createMenuItem(@PathVariable String restaurantId, @RequestBody MenuItem menuItem) {
+    public ResponseEntity<?> createMenuItem(@PathVariable @NonNull String restaurantId, @RequestBody @NonNull MenuItem menuItem) {
         menuItem.setRestaurantId(restaurantId);
         MenuItem saved = menuItemRepository.save(menuItem);
         return ResponseEntity.status(HttpStatus.CREATED).body(saved);
     }
 
     @PutMapping("/{itemId}")
-    public ResponseEntity<?> updateMenuItem(@PathVariable String restaurantId, @PathVariable String itemId, @RequestBody MenuItem update) {
+    public ResponseEntity<?> updateMenuItem(@PathVariable @NonNull String restaurantId, @PathVariable @NonNull String itemId, @RequestBody @NonNull MenuItem update) {
         Optional<MenuItem> optionalMenuItem = menuItemRepository.findById(itemId);
         if (optionalMenuItem.isEmpty()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Menu item not found"));
@@ -52,7 +53,7 @@ public class OwnerMenuController {
     }
 
     @DeleteMapping("/{itemId}")
-    public ResponseEntity<?> deleteMenuItem(@PathVariable String itemId) {
+    public ResponseEntity<?> deleteMenuItem(@PathVariable @NonNull String itemId) {
         if (!menuItemRepository.existsById(itemId)) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Menu item not found"));
         }
@@ -60,4 +61,3 @@ public class OwnerMenuController {
         return ResponseEntity.noContent().build();
     }
 }
-

@@ -30,18 +30,26 @@ const Login = () => {
       }
 
       const body = await response.json().catch(() => null);
-      if (body && body.userId && body.role && body.token) {
+      if (body && body.userId && body.role) {
         login({
           id: body.userId,
           role: body.role,
           email: data.email,
-          token: body.token
+          token: body.token || null
         });
+        if (typeof window !== 'undefined') {
+          window.alert('Login successful.');
+        }
+        if (body.role === 'restaurant_owner') {
+          navigate('/owner');
+        } else {
+          navigate('/');
+        }
+      } else {
+        if (typeof window !== 'undefined') {
+          window.alert('Unexpected response from server. Please try again.');
+        }
       }
-      if (typeof window !== 'undefined') {
-        window.alert('Login successful.');
-      }
-      navigate('/');
     } catch (e) {
       if (typeof window !== 'undefined') {
         window.alert('Could not connect to server. Please make sure the backend is running.');

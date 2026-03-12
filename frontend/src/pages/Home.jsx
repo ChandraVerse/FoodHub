@@ -1,14 +1,8 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Search } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
 
 const Home = () => {
-  const navigate = useNavigate();
-
-  const handleSearch = () => {
-    navigate('/restaurants');
-  };
 
   const heroImages = [
     {
@@ -49,47 +43,47 @@ const Home = () => {
     }
   ];
 
-  const trendingDishes = [
+  const trendingAds = [
     {
       id: 1,
-      name: 'Truffle Margherita',
-      tag: 'Italian',
+      name: '50% OFF First Order',
+      tag: 'Sponsored',
       image: 'https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 2,
-      name: 'Double Cheese Burger',
-      tag: 'American',
+      name: 'Free Delivery Week',
+      tag: 'Limited Offer',
       image: 'https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 3,
-      name: 'Sushi Platter',
-      tag: 'Japanese',
+      name: 'Premium Partner Spotlight',
+      tag: 'Featured',
       image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 4,
-      name: 'Spicy Ramen Bowl',
-      tag: 'Japanese',
+      name: 'Late Night Deals',
+      tag: 'Sponsored',
       image: 'https://images.unsplash.com/photo-1604908176997-1251884b08a2?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 5,
-      name: 'Paneer Butter Masala',
-      tag: 'Indian',
+      name: 'New Restaurant Launch',
+      tag: 'Sponsored',
       image: 'https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 6,
-      name: 'Kung Pao Chicken',
-      tag: 'Chinese',
+      name: 'Combo Meal Offers',
+      tag: 'Limited Offer',
       image: 'https://images.unsplash.com/photo-1598866594230-a7c12756260c?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 7,
-      name: 'Chicken Tacos',
-      tag: 'Mexican',
+      name: 'Top Rated in Your Area',
+      tag: 'Featured',
       image: 'https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=800&q=80'
     }
   ];
@@ -97,61 +91,61 @@ const Home = () => {
   const fallbackFoodImage =
     'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300"><rect width="100%25" height="100%25" fill="%23FF6B6B"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="system-ui" font-size="24">Food%20Image</text></svg>';
 
-  const cuisines = [
+  const promoCards = [
     {
       id: 1,
-      name: 'Indian',
-      badge: 'Spicy curries',
-      emoji: '🍛',
+      name: 'Exclusive App Offers',
+      badge: 'Save more on every order',
+      emoji: '📱',
       image: 'https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 2,
-      name: 'Chinese',
-      badge: 'Street-style noodles',
-      emoji: '🥡',
+      name: 'Partner Restaurants',
+      badge: 'Handpicked for you',
+      emoji: '🏬',
       image: 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 3,
-      name: 'Mexican',
-      badge: 'Tacos and burritos',
-      emoji: '🌮',
+      name: 'Fast Delivery',
+      badge: 'Under 30 minutes',
+      emoji: '⚡',
       image: 'https://images.unsplash.com/photo-1600891964599-f61ba0e24092?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 4,
-      name: 'Italian',
-      badge: 'Pasta and pizza',
-      emoji: '🍝',
+      name: 'Weekend Specials',
+      badge: 'Limited time deals',
+      emoji: '🎉',
       image: 'https://images.unsplash.com/photo-1543353071-873f17a7a088?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 5,
-      name: 'Japanese',
-      badge: 'Sushi and ramen',
-      emoji: '🍣',
+      name: 'Healthy Choices',
+      badge: 'Bowls and salads',
+      emoji: '🥗',
       image: 'https://images.unsplash.com/photo-1553621042-f6e147245754?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 6,
-      name: 'Burgers',
-      badge: 'Gourmet stacks',
-      emoji: '🍔',
+      name: 'Family Packs',
+      badge: 'Feeds the whole crew',
+      emoji: '👨‍👩‍👧‍👦',
       image: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 7,
-      name: 'Desserts',
-      badge: 'Cakes and ice cream',
+      name: 'Dessert Deals',
+      badge: 'Sweet endings',
       emoji: '🍰',
       image: 'https://images.unsplash.com/photo-1517244866741-cc129009c8f9?auto=format&fit=crop&w=800&q=80'
     },
     {
       id: 8,
-      name: 'Healthy Bowls',
-      badge: 'Salads and bowls',
-      emoji: '🥗',
+      name: 'Late Night Cravings',
+      badge: 'Open till late',
+      emoji: '🌙',
       image: 'https://images.unsplash.com/photo-1546069901-d5bfd2cbfb1f?auto=format&fit=crop&w=800&q=80'
     }
   ];
@@ -206,12 +200,11 @@ const Home = () => {
                 placeholder="Enter your delivery location..." 
                 className="flex-grow px-4 py-3 bg-transparent outline-none text-gray-800 dark:text-gray-100 placeholder-gray-500 text-sm md:text-base"
               />
-              <button 
-                onClick={handleSearch}
+              <button
                 className="bg-gray-900 dark:bg-primary text-white px-5 md:px-8 py-3 rounded-full font-bold hover:bg-gray-800 dark:hover:bg-red-500 transition duration-300 flex items-center gap-2 mr-1"
               >
                 <Search size={18} />
-                <span className="hidden md:inline">Find Food</span>
+                <span className="hidden md:inline">Search offers</span>
               </button>
             </motion.div>
 
@@ -284,8 +277,8 @@ const Home = () => {
       <section className="py-10 bg-white dark:bg-dark-bg border-b border-light-border/60 dark:border-dark-border/70">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Trending now</h2>
-            <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Fresh picks from your favorite places</span>
+            <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">Sponsored promotions</h2>
+            <span className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Ads and offers tailored for you</span>
           </div>
           <div className="relative overflow-hidden">
             <motion.div
@@ -293,15 +286,15 @@ const Home = () => {
               animate={{ x: ['0%', '-50%'] }}
               transition={{ duration: 30, repeat: Infinity, ease: 'linear' }}
             >
-              {[...trendingDishes, ...trendingDishes].map((dish, index) => (
+              {[...trendingAds, ...trendingAds].map((ad, index) => (
                 <div
-                  key={`${dish.id}-${index}`}
+                  key={`${ad.id}-${index}`}
                   className="min-w-[220px] md:min-w-[260px] bg-white dark:bg-dark-card rounded-2xl shadow-md overflow-hidden border border-light-border/60 dark:border-dark-border/80"
                 >
                   <div className="h-36 md:h-40 w-full overflow-hidden">
                     <img
-                      src={dish.image}
-                      alt={dish.name}
+                      src={ad.image}
+                      alt={ad.name}
                       onError={(e) => {
                         e.currentTarget.onerror = null;
                         e.currentTarget.src = fallbackFoodImage;
@@ -311,8 +304,8 @@ const Home = () => {
                   </div>
                   <div className="p-4 flex items-center justify-between">
                     <div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">{dish.tag}</p>
-                      <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white">{dish.name}</h3>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1 uppercase tracking-wide">{ad.tag}</p>
+                      <h3 className="text-sm md:text-base font-semibold text-gray-900 dark:text-white">{ad.name}</h3>
                     </div>
                     <span className="text-lg md:text-xl">🔥</span>
                   </div>
@@ -328,18 +321,17 @@ const Home = () => {
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Popular Cuisines</h2>
-              <p className="text-gray-500 dark:text-gray-400">Explore the best food around you</p>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Why order with FoodHub?</h2>
+              <p className="text-gray-500 dark:text-gray-400">Discover partner benefits and exclusive promotions</p>
             </div>
-            <Link to="/restaurants" className="text-primary font-semibold hover:underline hidden md:block">See All</Link>
+            <span className="text-primary font-semibold hidden md:block">Sponsored</span>
           </div>
           
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {cuisines.map((item) => (
+            {promoCards.map((item) => (
               <motion.div 
                 key={item.id}
                 whileHover={{ y: -6 }}
-                onClick={() => navigate('/restaurants')}
                 className="group cursor-pointer rounded-2xl overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-light-border/60 dark:border-dark-border/80 bg-white dark:bg-dark-card"
               >
                 <div className="relative h-28 md:h-32 overflow-hidden">

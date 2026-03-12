@@ -40,12 +40,32 @@ const OwnerDashboard = () => {
 
   const stats = useMemo(
     () => [
-      { label: 'Active Restaurants', value: 2, icon: Store, color: 'from-primary/10 to-primary/5' },
-      { label: 'Menu Items', value: 18, icon: Utensils, color: 'from-secondary/10 to-secondary/5' },
-      { label: 'Orders Today', value: 12, icon: ClipboardList, color: 'from-emerald-100/40 to-emerald-50/40' },
-      { label: 'Monthly Revenue', value: '₹ 42,500', icon: BarChart2, color: 'from-amber-100/40 to-amber-50/40' }
+      {
+        label: 'Active Restaurants',
+        value: restaurants.length,
+        icon: Store,
+        color: 'from-primary/10 to-primary/5'
+      },
+      {
+        label: 'Menu Items',
+        value: selectedRestaurant ? menuItems.length : 0,
+        icon: Utensils,
+        color: 'from-secondary/10 to-secondary/5'
+      },
+      {
+        label: 'Orders Today',
+        value: 0,
+        icon: ClipboardList,
+        color: 'from-emerald-100/40 to-emerald-50/40'
+      },
+      {
+        label: 'Monthly Revenue',
+        value: '₹ 0',
+        icon: BarChart2,
+        color: 'from-amber-100/40 to-amber-50/40'
+      }
     ],
-    []
+    [restaurants.length, selectedRestaurant, menuItems.length]
   );
 
   useEffect(() => {
@@ -61,8 +81,12 @@ const OwnerDashboard = () => {
         }
         const data = await response.json();
         if (Array.isArray(data) && data.length > 0) {
+          const ownerId = user ? user.id : null;
+          const filtered = ownerId
+            ? data.filter((r) => r.ownerId === ownerId)
+            : data.filter((r) => r.ownerId);
           setRestaurants(
-            data.map((r) => ({
+            filtered.map((r) => ({
               id: r.id || r._id,
               name: r.name,
               cuisine: r.cuisine,
@@ -71,41 +95,11 @@ const OwnerDashboard = () => {
             }))
           );
         } else {
-          setRestaurants([
-            {
-              id: 1,
-              name: 'Bombay Darbar',
-              cuisine: 'Indian',
-              status: 'Open',
-              items: 8
-            },
-            {
-              id: 2,
-              name: 'Casa Mexicana',
-              cuisine: 'Mexican',
-              status: 'Closed',
-              items: 10
-            }
-          ]);
+          setRestaurants([]);
         }
       } catch (e) {
-        setError('Could not load restaurants from backend. Showing sample data.');
-        setRestaurants([
-          {
-            id: 1,
-            name: 'Bombay Darbar',
-            cuisine: 'Indian',
-            status: 'Open',
-            items: 8
-          },
-          {
-            id: 2,
-            name: 'Casa Mexicana',
-            cuisine: 'Mexican',
-            status: 'Closed',
-            items: 10
-          }
-        ]);
+        setError('Could not load restaurants from backend.');
+        setRestaurants([]);
       } finally {
         setLoading(false);
       }

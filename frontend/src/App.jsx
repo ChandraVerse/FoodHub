@@ -5,11 +5,9 @@ import { AuthProvider } from './context/AuthContext';
 import Header from './components/layout/Header';
 import Footer from './components/layout/Footer';
 import Home from './pages/Home';
-import RestaurantList from './pages/RestaurantList';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Cart from './pages/Cart';
-import Offers from './pages/Offers';
 import OwnerDashboard from './pages/OwnerDashboard';
 
 function App() {
@@ -22,12 +20,10 @@ function App() {
             <main className="flex-grow bg-light-bg dark:bg-dark-bg transition-colors duration-300">
               <Routes>
                 <Route path="/" element={<Home />} />
-                <Route path="/restaurants" element={<RestaurantList />} />
                 <Route path="/owner" element={<OwnerDashboard />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
                 <Route path="/cart" element={<Cart />} />
-                <Route path="/offers" element={<Offers />} />
               </Routes>
             </main>
             <Footer />

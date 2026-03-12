@@ -12,8 +12,6 @@ const Header = () => {
 
   const navLinks = [
     { name: 'Home', path: '/' },
-    { name: 'Restaurants', path: '/restaurants' },
-    { name: 'Offers', path: '/offers', icon: <Tag size={16} className="inline mr-1" /> },
   ];
 
   return (

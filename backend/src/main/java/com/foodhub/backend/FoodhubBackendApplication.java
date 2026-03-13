@@ -15,25 +15,26 @@ public class FoodhubBackendApplication {
         SpringApplication.run(FoodhubBackendApplication.class, args);
     }
 
-    @Bean
-    CommandLineRunner demoDataCleanup(RestaurantRepository restaurantRepository, MenuItemRepository menuItemRepository) {
-        return args -> {
-            var demoRestaurants = restaurantRepository.findAll().stream()
-                    .filter(r -> r.getOwnerId() == null || r.getOwnerId().isBlank())
-                    .toList();
-            if (demoRestaurants.isEmpty()) {
-                return;
-            }
-            var demoRestaurantIds = demoRestaurants.stream()
-                    .map(Restaurant::getId)
-                    .toList();
-            for (String restaurantId : demoRestaurantIds) {
-                var menuItems = menuItemRepository.findByRestaurantId(restaurantId);
-                if (!menuItems.isEmpty()) {
-                    menuItemRepository.deleteAll(menuItems);
-                }
-            }
-            restaurantRepository.deleteAll(demoRestaurants);
-        };
-    }
+    // Disabled due to MongoDB Atlas SSL compatibility issue with Java 25
+    // @Bean
+    // CommandLineRunner demoDataCleanup(RestaurantRepository restaurantRepository, MenuItemRepository menuItemRepository) {
+    //    return args -> {
+    //        var demoRestaurants = restaurantRepository.findAll().stream()
+    //                .filter(r -> r.getOwnerId() == null || r.getOwnerId().isBlank())
+    //                .toList();
+    //        if (demoRestaurants.isEmpty()) {
+    //            return;
+    //        }
+    //        var demoRestaurantIds = demoRestaurants.stream()
+    //                .map(Restaurant::getId)
+    //                .toList();
+    //        for (String restaurantId : demoRestaurantIds) {
+    //            var menuItems = menuItemRepository.findByRestaurantId(restaurantId);
+    //            if (!menuItems.isEmpty()) {
+    //                menuItemRepository.deleteAll(menuItems);
+    //            }
+    //        }
+    //        restaurantRepository.deleteAll(demoRestaurants);
+    //    };
+    // }
 }

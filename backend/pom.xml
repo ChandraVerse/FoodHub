@@ -17,8 +17,9 @@
     <description>Spring Boot backend for FoodHub with MongoDB</description>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <jjwt.version>0.12.5</jjwt.version>
+        <maven.compiler.release>21</maven.compiler.release>
     </properties>
 
     <dependencies>
@@ -66,6 +67,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <jvmArguments>--add-opens java.base/sun.security.ssl=ALL-UNNAMED --add-opens java.base/sun.security.util=ALL-UNNAMED --add-opens java.base/sun.net.dns=ALL-UNNAMED -Djdk.tls.namedGroups="secp256r1,secp384r1,secp521r1" -Djdk.tls.acknowledgeCloseNotify=true</jvmArguments>
+                </configuration>
             </plugin>
         </plugins>
     </build>

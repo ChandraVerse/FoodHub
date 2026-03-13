@@ -1,0 +1,23 @@
+{
+  "groups": [
+    {
+      "name": "jwt",
+      "type": "com.foodhub.backend.config.JwtProperties",
+      "description": "JWT Token Configuration Properties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "jwt.secret",
+      "type": "java.lang.String",
+      "description": "The secret key used to sign JWT tokens. Must be at least 32 characters long.",
+      "defaultValue": "change-me-jwt-secret-change-me-jwt-secret"
+    },
+    {
+      "name": "jwt.expiration-minutes",
+      "type": "java.lang.Long",
+      "description": "Token expiration time in minutes.",
+      "defaultValue": "1440"
+    }
+  ]
+}

@@ -26,8 +26,8 @@ public class OwnerMenuController {
         this.restaurantRepository = restaurantRepository;
     }
 
-    private boolean ownerCanAccess(Authentication authentication, String restaurantId) {
-        Object principal = authentication.getPrincipal();
+    private boolean ownerCanAccess(Authentication authentication, @NonNull String restaurantId) {
+        Object principal = authentication != null ? authentication.getPrincipal() : null;
         if (!(principal instanceof String ownerId) || ownerId == null) {
             return false;
         }

@@ -55,7 +55,12 @@ public class OwnerMetricsController {
             order.getItems().forEach(item -> {
                 String name = item.getName();
                 if (name != null) {
-                    itemCounts.merge(name, item.getQuantity(), Integer::sum);
+                    int quantity = item.getQuantity();
+                    itemCounts.merge(
+                            name,
+                            quantity,
+                            (current, added) -> (current != null ? current : 0) + (added != null ? added : 0)
+                    );
                 }
             });
         }

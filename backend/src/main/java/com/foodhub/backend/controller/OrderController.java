@@ -1,6 +1,7 @@
 package com.foodhub.backend.controller;
 
 import com.foodhub.backend.model.Order;
+import com.foodhub.backend.model.OrderItem;
 import com.foodhub.backend.model.Restaurant;
 import com.foodhub.backend.repository.OrderRepository;
 import com.foodhub.backend.repository.RestaurantRepository;
@@ -28,17 +29,19 @@ public class OrderController {
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<?> createOrder(Authentication authentication, @RequestBody @NonNull Order order) {
-        if (order.getRestaurantId() == null || order.getRestaurantId().isEmpty()) {
+    public ResponseEntity<?> createOrder(Authentication authentication, @RequestBody Order order) {
+        String restaurantId = order.getRestaurantId();
+        if (restaurantId == null || restaurantId.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "restaurantId is required"));
         }
-        if (order.getItems() == null || order.getItems().isEmpty()) {
+        List<OrderItem> items = order.getItems();
+        if (items == null || items.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "At least one item is required"));
         }
         Optional<Restaurant> restaurant =
-                restaurantRepository.findById(order.getRestaurantId());
+                restaurantRepository.findById(restaurantId);
         if (restaurant.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "Restaurant not found"));
@@ -48,7 +51,7 @@ public class OrderController {
             order.setCustomerId(userId);
         }
         order.setOwnerId(r.getOwnerId());
-        double total = order.getItems().stream()
+        double total = items.stream()
                 .mapToDouble(i -> i.getPrice() * i.getQuantity())
                 .sum();
         order.setTotalAmount(total);
@@ -82,7 +85,7 @@ public class OrderController {
 
     @GetMapping("/owner/restaurants/{restaurantId}/orders")
     public ResponseEntity<?> getRestaurantOrders(Authentication authentication, @PathVariable @NonNull String restaurantId) {
-        Object principal = authentication.getPrincipal();
+        Object principal = authentication != null ? authentication.getPrincipal() : null;
         if (!(principal instanceof String ownerId) || ownerId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                     .body(Map.of("message", "Unauthorized"));

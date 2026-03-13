@@ -4,6 +4,7 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Document(collection = "orders")
@@ -101,7 +102,7 @@ public class Order {
     }
 
     public void setItems(List<OrderItem> items) {
-        this.items = items;
+        this.items = items != null ? items : new ArrayList<>();
     }
 
     public double getTotalAmount() {

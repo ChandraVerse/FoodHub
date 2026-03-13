@@ -115,23 +115,25 @@ cd "Multiple Restaurant Site"
 ### 3. Configure Backend (Spring Boot + MongoDB Atlas) 🔧
 
 1. Open `backend/src/main/resources/application.properties`  
-2. Make sure your MongoDB Atlas URI is set, for example:
+2. Confirm it uses an environment variable for the connection string:
 
    ```properties
    server.port=8080
-   spring.data.mongodb.uri=mongodb+srv://<user>:<password>@cluster0.your-id.mongodb.net/foodhub?retryWrites=true&w=majority&appName=Cluster0
+   spring.data.mongodb.uri=${MONGODB_URI}
    ```
 
-3. Ensure your Atlas user, password, and database name (`foodhub`) are correct.
-
-4. From the project root:
+3. In your local machine, keep your actual MongoDB Atlas URI in a local-only env file (for example `.env.local`, which is already listed in `.gitignore`), and export it when you run the backend:
 
    ```bash
+   # PowerShell (Windows)
+   $env:MONGODB_URI = "mongodb+srv://<user>:<password>@cluster0.your-id.mongodb.net/foodhub?retryWrites=true&w=majority&appName=Cluster0"
    cd backend
    mvn spring-boot:run
    ```
 
    Backend runs at: `http://localhost:8080` 🚀  
+
+4. In production (on your hosting platform), add an environment variable named `MONGODB_URI` with your Atlas connection string instead of hardcoding it in the repo.
 
 Key backend endpoints:
 

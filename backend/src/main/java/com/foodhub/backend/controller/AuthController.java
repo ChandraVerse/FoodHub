@@ -160,7 +160,16 @@ public class AuthController {
                         .body(Map.of("message", "Invalid email or password"));
             }
 
-            if (!passwordEncoder.matches(request.getPassword(), encodedPassword)) {
+            boolean passwordMatches;
+            try {
+                passwordMatches = passwordEncoder.matches(request.getPassword(), encodedPassword);
+            } catch (Exception ex) {
+                logger.warn("Password hash verification failed for user {}", user.getId(), ex);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Invalid email or password"));
+            }
+
+            if (!passwordMatches) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(Map.of("message", "Invalid email or password"));
             }

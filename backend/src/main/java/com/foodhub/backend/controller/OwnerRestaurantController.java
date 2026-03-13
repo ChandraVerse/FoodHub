@@ -58,6 +58,11 @@ public class OwnerRestaurantController {
         existing.setPincode(update.getPincode());
         existing.setPhone(update.getPhone());
         existing.setCoverImageUrl(update.getCoverImageUrl());
+        existing.setOpen(update.getOpen());
+        existing.setOpeningHours(update.getOpeningHours());
+        existing.setMinOrderValue(update.getMinOrderValue());
+        existing.setDeliveryFee(update.getDeliveryFee());
+        existing.setPureVeg(update.getPureVeg());
         Restaurant saved = restaurantRepository.save(existing);
         return ResponseEntity.ok(saved);
     }

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { apiRequest } from '../utils/apiClient';
 
 const Orders = () => {
   const { user } = useAuth();
@@ -17,15 +18,7 @@ const Orders = () => {
         return;
       }
       try {
-        const response = await fetch('http://localhost:8080/api/customer/orders', {
-          headers: {
-            Authorization: `Bearer ${user.token}`
-          }
-        });
-        if (!response.ok) {
-          throw new Error();
-        }
-        const body = await response.json().catch(() => []);
+        const body = await apiRequest('/api/customer/orders', {}, user.token);
         if (Array.isArray(body)) {
           setOrders(body);
         }
@@ -124,4 +117,3 @@ const Orders = () => {
 };
 
 export default Orders;
-

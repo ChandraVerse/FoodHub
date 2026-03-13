@@ -4,11 +4,13 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const Login = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showError, showSuccess } = useToast();
 
   const onSubmit = async (data) => {
     try {
@@ -23,9 +25,7 @@ const Login = () => {
       if (!response.ok) {
         const errorBody = await response.json().catch(() => null);
         const message = errorBody?.message || 'Login failed. Please check your credentials.';
-        if (typeof window !== 'undefined') {
-          window.alert(message);
-        }
+        showError(message);
         return;
       }
 
@@ -37,23 +37,17 @@ const Login = () => {
           email: data.email,
           token: body.token || null
         });
-        if (typeof window !== 'undefined') {
-          window.alert('Login successful.');
-        }
+        showSuccess('Login successful.');
         if (body.role === 'restaurant_owner') {
           navigate('/owner');
         } else {
           navigate('/');
         }
       } else {
-        if (typeof window !== 'undefined') {
-          window.alert('Unexpected response from server. Please try again.');
-        }
+        showError('Unexpected response from server. Please try again.');
       }
     } catch (e) {
-      if (typeof window !== 'undefined') {
-        window.alert('Could not connect to server. Please make sure the backend is running.');
-      }
+      showError('Could not connect to server. Please make sure the backend is running.');
     }
   };
 

@@ -20,6 +20,11 @@ public class Restaurant {
     private String pincode;
     private String phone;
     private String coverImageUrl;
+    private Boolean open;
+    private String openingHours;
+    private Double minOrderValue;
+    private Double deliveryFee;
+    private Boolean pureVeg;
 
     public String getId() {
         return id;
@@ -123,5 +128,45 @@ public class Restaurant {
 
     public void setCoverImageUrl(String coverImageUrl) {
         this.coverImageUrl = coverImageUrl;
+    }
+
+    public Boolean getOpen() {
+        return open;
+    }
+
+    public void setOpen(Boolean open) {
+        this.open = open;
+    }
+
+    public String getOpeningHours() {
+        return openingHours;
+    }
+
+    public void setOpeningHours(String openingHours) {
+        this.openingHours = openingHours;
+    }
+
+    public Double getMinOrderValue() {
+        return minOrderValue;
+    }
+
+    public void setMinOrderValue(Double minOrderValue) {
+        this.minOrderValue = minOrderValue;
+    }
+
+    public Double getDeliveryFee() {
+        return deliveryFee;
+    }
+
+    public void setDeliveryFee(Double deliveryFee) {
+        this.deliveryFee = deliveryFee;
+    }
+
+    public Boolean getPureVeg() {
+        return pureVeg;
+    }
+
+    public void setPureVeg(Boolean pureVeg) {
+        this.pureVeg = pureVeg;
     }
 }

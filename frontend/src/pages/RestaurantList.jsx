@@ -1,12 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Star, Clock, DollarSign } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+import { Star, Clock, DollarSign, Search, Filter } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+import { apiRequest } from '../utils/apiClient';
 
 const RestaurantList = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('All');
   const [restaurants, setRestaurants] = useState([]);
+  const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('rating');
+  const [showOnlyOpen, setShowOnlyOpen] = useState(false);
+  const [maxPrice, setMaxPrice] = useState('');
 
   const fallbackFoodImage =
     'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="400" height="260"><rect width="100%25" height="100%25" fill="%231F2933"/><text x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" fill="white" font-family="system-ui" font-size="20">Restaurant%20Image</text></svg>';
@@ -21,11 +26,7 @@ const RestaurantList = () => {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch('http://localhost:8080/api/restaurants');
-        if (!response.ok) {
-          throw new Error();
-        }
-        const data = await response.json();
+        const data = await apiRequest('/api/restaurants');
         setRestaurants(data);
       } catch (e) {
         setRestaurants([]);
@@ -35,9 +36,46 @@ const RestaurantList = () => {
     fetchRestaurants();
   }, []);
 
-  const filteredRestaurants = activeFilter === 'All'
-    ? restaurants
-    : restaurants.filter(r => r.cuisine === activeFilter);
+  const filteredRestaurants = useMemo(() => {
+    let list = restaurants;
+    if (activeFilter !== 'All') {
+      list = list.filter((r) => r.cuisine === activeFilter);
+    }
+    if (search.trim()) {
+      const q = search.trim().toLowerCase();
+      list = list.filter((r) =>
+        (r.name || '').toLowerCase().includes(q) ||
+        (r.city || '').toLowerCase().includes(q)
+      );
+    }
+    if (showOnlyOpen) {
+      list = list.filter((r) => r.open !== false);
+    }
+    if (maxPrice) {
+      const limit = parseInt(maxPrice, 10);
+      if (!Number.isNaN(limit)) {
+        list = list.filter((r) => {
+          const numeric = typeof r.minOrderValue === 'number'
+            ? r.minOrderValue
+            : parseInt(String(r.price || '').replace(/\D/g, ''), 10);
+          return Number.isNaN(numeric) ? true : numeric <= limit;
+        });
+      }
+    }
+    const sorted = [...list];
+    if (sortBy === 'rating') {
+      sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    } else if (sortBy === 'time') {
+      sorted.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    } else if (sortBy === 'price') {
+      sorted.sort((a, b) => {
+        const pa = parseInt(String(a.price || '').replace(/\D/g, ''), 10) || 0;
+        const pb = parseInt(String(b.price || '').replace(/\D/g, ''), 10) || 0;
+        return pa - pb;
+      });
+    }
+    return sorted;
+  }, [restaurants, activeFilter, search, showOnlyOpen, maxPrice, sortBy]);
 
   return (
     <div className="bg-light-bg dark:bg-dark-bg min-h-screen py-8 transition-colors duration-300">
@@ -49,7 +87,50 @@ const RestaurantList = () => {
           </p>
         )}
         
-        {/* Filters */}
+        {/* Search and Filters */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+          <div className="flex-1 relative">
+            <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 rounded-full bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-sm text-gray-900 dark:text-white"
+              placeholder="Search by restaurant or city"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+              <Filter size={14} />
+              <label className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={showOnlyOpen}
+                  onChange={(e) => setShowOnlyOpen(e.target.checked)}
+                />
+                <span>Open now</span>
+              </label>
+              <label className="flex items-center gap-1">
+                <span>Max ₹</span>
+                <input
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className="w-20 px-2 py-1 rounded-full border border-gray-200 dark:border-dark-border bg-white dark:bg-dark-card text-xs"
+                  placeholder="Any"
+                />
+              </label>
+            </div>
+            <select
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value)}
+              className="text-xs md:text-sm px-3 py-2 rounded-full bg-white dark:bg-dark-card border border-gray-200 dark:border-dark-border text-gray-700 dark:text-gray-200"
+            >
+              <option value="rating">Top rated</option>
+              <option value="time">Delivery time</option>
+              <option value="price">Price</option>
+            </select>
+          </div>
+        </div>
+
         <div className="flex gap-4 mb-8 overflow-x-auto pb-2 scrollbar-hide">
           {['All', 'Indian', 'Chinese', 'Mexican', 'Italian', 'Japanese', 'Burger', 'Dessert', 'Healthy'].map((filter, idx) => (
              <button 
@@ -79,7 +160,7 @@ const RestaurantList = () => {
             >
               <div className="relative h-48 bg-gray-200 dark:bg-gray-800 overflow-hidden">
                 <img
-                  src={item.image}
+                  src={item.coverImageUrl || item.image}
                   alt={item.name}
                   onError={(e) => {
                     e.currentTarget.onerror = null;

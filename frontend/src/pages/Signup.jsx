@@ -4,6 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Phone } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const Signup = () => {
   const { register, handleSubmit, formState: { errors } } = useForm({
@@ -13,6 +14,7 @@ const Signup = () => {
   });
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { showError, showSuccess } = useToast();
 
   const onSubmit = async (data) => {
     try {
@@ -27,9 +29,7 @@ const Signup = () => {
       if (!response.ok) {
         const errorBody = await response.json().catch(() => null);
         const message = errorBody?.message || 'Signup failed. Please try again.';
-        if (typeof window !== 'undefined') {
-          window.alert(message);
-        }
+        showError(message);
         return;
       }
 
@@ -41,14 +41,10 @@ const Signup = () => {
           email: data.email
         });
       }
-      if (typeof window !== 'undefined') {
-        window.alert('Signup successful.');
-      }
+      showSuccess('Signup successful.');
       navigate('/');
     } catch (e) {
-      if (typeof window !== 'undefined') {
-        window.alert('Could not connect to server. Please make sure the backend is running.');
-      }
+      showError('Could not connect to server. Please make sure the backend is running.');
     }
   };
 

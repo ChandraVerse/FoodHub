@@ -45,10 +45,26 @@ public class OwnerMetricsController {
         double monthlyRevenue = monthOrders.stream()
                 .mapToDouble(Order::getTotalAmount)
                 .sum();
+        int totalOrdersThisMonth = monthOrders.size();
+
+        Map<String, Integer> itemCounts = new HashMap<>();
+        for (Order order : monthOrders) {
+            if (order.getItems() == null) {
+                continue;
+            }
+            order.getItems().forEach(item -> {
+                String name = item.getName();
+                if (name != null) {
+                    itemCounts.merge(name, item.getQuantity(), Integer::sum);
+                }
+            });
+        }
 
         Map<String, Object> body = new HashMap<>();
         body.put("ordersToday", ordersToday);
         body.put("monthlyRevenue", monthlyRevenue);
+        body.put("totalOrdersThisMonth", totalOrdersThisMonth);
+        body.put("topItems", itemCounts);
         return ResponseEntity.ok(body);
     }
 }

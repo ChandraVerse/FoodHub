@@ -4,6 +4,7 @@ import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const Cart = () => {
   const { items, restaurantId, restaurantName, updateQuantity, removeItem, clearCart } = useCart();
@@ -15,6 +16,7 @@ const Cart = () => {
   const [address, setAddress] = useState('');
   const [instructions, setInstructions] = useState('');
   const [placing, setPlacing] = useState(false);
+  const { showError, showSuccess } = useToast();
 
   const subtotal = useMemo(
     () => items.reduce((acc, item) => acc + item.price * item.quantity, 0),
@@ -26,28 +28,20 @@ const Cart = () => {
   const handlePlaceOrder = async (event) => {
     event.preventDefault();
     if (!user) {
-      if (typeof window !== 'undefined') {
-        window.alert('Please login to place your order.');
-      }
+      showError('Please login to place your order.');
       navigate('/login');
       return;
     }
     if (items.length === 0 || !restaurantId) {
-      if (typeof window !== 'undefined') {
-        window.alert('Your cart is empty.');
-      }
+      showError('Your cart is empty.');
       return;
     }
     if (!email) {
-      if (typeof window !== 'undefined') {
-        window.alert('Please enter your email to place the order.');
-      }
+      showError('Please enter your email to place the order.');
       return;
     }
     if (!name || !phone || !address) {
-      if (typeof window !== 'undefined') {
-        window.alert('Please fill in your name, phone, and address.');
-      }
+      showError('Please fill in your name, phone, and address.');
       return;
     }
     try {
@@ -77,9 +71,7 @@ const Cart = () => {
       if (!response.ok) {
         const errorBody = await response.json().catch(() => null);
         const message = errorBody?.message || 'Could not place order. Please try again.';
-        if (typeof window !== 'undefined') {
-          window.alert(message);
-        }
+        showError(message);
         return;
       }
       const saved = await response.json().catch(() => null);
@@ -88,14 +80,10 @@ const Cart = () => {
       if (orderId) {
         navigate(`/order-confirmation/${orderId}`);
       } else {
-        if (typeof window !== 'undefined') {
-          window.alert('Order placed successfully.');
-        }
+        showSuccess('Order placed successfully.');
       }
     } catch (e) {
-      if (typeof window !== 'undefined') {
-        window.alert('Could not connect to server. Please check your connection.');
-      }
+      showError('Could not connect to server. Please check your connection.');
     } finally {
       setPlacing(false);
     }

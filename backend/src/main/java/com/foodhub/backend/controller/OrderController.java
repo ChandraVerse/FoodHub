@@ -96,4 +96,30 @@ public class OrderController {
         List<Order> orders = orderRepository.findByRestaurantIdOrderByCreatedAtDesc(restaurantId);
         return ResponseEntity.ok(orders);
     }
+
+    @PatchMapping("/owner/orders/{id}/status")
+    public ResponseEntity<?> updateOrderStatus(
+            Authentication authentication,
+            @PathVariable @NonNull String id,
+            @RequestBody Map<String, String> body
+    ) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof String ownerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Unauthorized"));
+        }
+        Optional<Order> optionalOrder = orderRepository.findById(id);
+        if (optionalOrder.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Order not found"));
+        }
+        Order order = optionalOrder.get();
+        if (order.getOwnerId() == null || !order.getOwnerId().equals(ownerId)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(Map.of("message", "Not allowed to modify this order"));
+        }
+        String status = body.get("status");
+        if (status == null || status.isBlank()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Status is required"));
+        }
+        order.setStatus(status);
+        Order saved = orderRepository.save(order);
+        return ResponseEntity.ok(saved);
+    }
 }

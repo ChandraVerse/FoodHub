@@ -3,13 +3,16 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { BarChart2, ClipboardList, Utensils, Store } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 const OwnerDashboard = () => {
   const { user } = useAuth();
+  const { showError, showSuccess } = useToast();
   const navigate = useNavigate();
   const [restaurants, setRestaurants] = useState([]);
   const [selectedRestaurant, setSelectedRestaurant] = useState(null);
   const [menuItems, setMenuItems] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [showRestaurantForm, setShowRestaurantForm] = useState(false);
   const [editingRestaurant, setEditingRestaurant] = useState(null);
   const [restaurantForm, setRestaurantForm] = useState({
@@ -21,7 +24,12 @@ const OwnerDashboard = () => {
     pincode: '',
     phone: '',
     price: '',
-    coverImageUrl: ''
+    coverImageUrl: '',
+    openingHours: '',
+    minOrderValue: '',
+    deliveryFee: '',
+    open: true,
+    pureVeg: false
   });
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [editingMenuItem, setEditingMenuItem] = useState(null);
@@ -42,6 +50,7 @@ const OwnerDashboard = () => {
 
   const [ordersToday, setOrdersToday] = useState(0);
   const [monthlyRevenue, setMonthlyRevenue] = useState(0);
+  const [totalOrdersThisMonth, setTotalOrdersThisMonth] = useState(0);
 
   const stats = useMemo(
     () => [
@@ -68,9 +77,15 @@ const OwnerDashboard = () => {
         value: `₹ ${monthlyRevenue.toLocaleString('en-IN', { maximumFractionDigits: 0 })}`,
         icon: BarChart2,
         color: 'from-amber-100/40 to-amber-50/40'
+      },
+      {
+        label: 'Orders This Month',
+        value: totalOrdersThisMonth,
+        icon: ClipboardList,
+        color: 'from-blue-100/40 to-blue-50/40'
       }
     ],
-    [restaurants.length, selectedRestaurant, menuItems.length, ordersToday, monthlyRevenue]
+    [restaurants.length, selectedRestaurant, menuItems.length, ordersToday, monthlyRevenue, totalOrdersThisMonth]
   );
 
   useEffect(() => {
@@ -140,6 +155,9 @@ const OwnerDashboard = () => {
           if (typeof body.monthlyRevenue === 'number') {
             setMonthlyRevenue(body.monthlyRevenue);
           }
+          if (typeof body.totalOrdersThisMonth === 'number') {
+            setTotalOrdersThisMonth(body.totalOrdersThisMonth);
+          }
         }
       } catch {
       }
@@ -167,7 +185,12 @@ const OwnerDashboard = () => {
       pincode: '',
       phone: '',
       price: '',
-      coverImageUrl: ''
+      coverImageUrl: '',
+      openingHours: '',
+      minOrderValue: '',
+      deliveryFee: '',
+      open: true,
+      pureVeg: false
     });
     setEditingRestaurant(null);
     setShowRestaurantForm(true);
@@ -186,6 +209,11 @@ const OwnerDashboard = () => {
         phone: restaurantForm.phone,
         price: restaurantForm.price,
         coverImageUrl: restaurantForm.coverImageUrl,
+        openingHours: restaurantForm.openingHours,
+        minOrderValue: restaurantForm.minOrderValue ? parseFloat(restaurantForm.minOrderValue) : null,
+        deliveryFee: restaurantForm.deliveryFee ? parseFloat(restaurantForm.deliveryFee) : null,
+        open: restaurantForm.open,
+        pureVeg: restaurantForm.pureVeg,
         ownerId: user ? user.id : null
       };
       const url = editingRestaurant
@@ -233,9 +261,7 @@ const OwnerDashboard = () => {
       setEditingRestaurant(null);
       setShowRestaurantForm(false);
     } catch (e) {
-      if (typeof window !== 'undefined') {
-        window.alert('Could not save restaurant. Please try again.');
-      }
+      showError('Could not save restaurant. Please try again.');
     }
   };
 
@@ -249,7 +275,12 @@ const OwnerDashboard = () => {
       pincode: restaurant.pincode || '',
       phone: restaurant.phone || '',
       price: restaurant.price || '',
-      coverImageUrl: restaurant.coverImageUrl || ''
+      coverImageUrl: restaurant.coverImageUrl || '',
+      openingHours: restaurant.openingHours || '',
+      minOrderValue: restaurant.minOrderValue != null ? String(restaurant.minOrderValue) : '',
+      deliveryFee: restaurant.deliveryFee != null ? String(restaurant.deliveryFee) : '',
+      open: restaurant.open !== false,
+      pureVeg: restaurant.pureVeg === true
     });
     setEditingRestaurant(restaurant);
     setShowRestaurantForm(true);
@@ -282,15 +313,14 @@ const OwnerDashboard = () => {
         setMenuItems([]);
       }
     } catch (e) {
-      if (typeof window !== 'undefined') {
-        window.alert('Could not delete restaurant. Please try again.');
-      }
+      showError('Could not delete restaurant. Please try again.');
     }
   };
 
   const loadMenuItems = async (restaurant) => {
     setSelectedRestaurant(restaurant);
     setMenuItems([]);
+    setOrders([]);
     try {
       const response = await fetch(`http://localhost:8080/api/owner/restaurants/${restaurant.id}/menu`);
       if (!response.ok) {
@@ -311,9 +341,56 @@ const OwnerDashboard = () => {
         );
       }
     } catch (e) {
-      if (typeof window !== 'undefined') {
-        window.alert('Could not load menu items. Please try again.');
+      showError('Could not load menu items. Please try again.');
+    }
+  };
+
+  const loadOrders = async (restaurant) => {
+    if (!restaurant) {
+      return;
+    }
+    try {
+      const token = user?.token;
+      const response = await fetch(
+        `http://localhost:8080/api/owner/restaurants/${restaurant.id}/orders`,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {}
+        }
+      );
+      if (!response.ok) {
+        throw new Error();
       }
+      const data = await response.json();
+      if (Array.isArray(data)) {
+        setOrders(data);
+      }
+    } catch (e) {
+      showError('Could not load orders for this restaurant.');
+      setOrders([]);
+    }
+  };
+
+  const handleStatusChange = async (order, status) => {
+    try {
+      const token = user?.token;
+      const response = await fetch(`http://localhost:8080/api/owner/orders/${order.id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ status })
+      });
+      if (!response.ok) {
+        throw new Error();
+      }
+      const saved = await response.json();
+      setOrders((prev) =>
+        prev.map((o) => (o.id === saved.id ? saved : o))
+      );
+      showSuccess('Order status updated.');
+    } catch (e) {
+      showError('Could not update order status.');
     }
   };
 
@@ -407,9 +484,7 @@ const OwnerDashboard = () => {
       setEditingMenuItem(null);
       setShowMenuForm(false);
     } catch (e) {
-      if (typeof window !== 'undefined') {
-        window.alert('Could not save menu item. Please try again.');
-      }
+      showError('Could not save menu item. Please try again.');
     }
   };
 
@@ -454,9 +529,7 @@ const OwnerDashboard = () => {
       }
       setMenuItems((prev) => prev.filter((m) => m.id !== item.id));
     } catch (e) {
-      if (typeof window !== 'undefined') {
-        window.alert('Could not delete menu item. Please try again.');
-      }
+      showError('Could not delete menu item. Please try again.');
     }
   };
 
@@ -579,7 +652,10 @@ const OwnerDashboard = () => {
                   </span>
                   <button
                     className="text-xs md:text-sm font-semibold text-primary hover:underline"
-                    onClick={() => loadMenuItems(r)}
+                    onClick={() => {
+                      loadMenuItems(r);
+                      loadOrders(r);
+                    }}
                   >
                     Manage menu
                   </button>
@@ -600,8 +676,8 @@ const OwnerDashboard = () => {
             ))}
           </div>
         </div>
-        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-light-border/80 dark:border-dark-border p-5 md:p-6">
-              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Menu management</h2>
+        <div className="bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-light-border/80 dark:border-dark-border p-5 md:p-6 space-y-4">
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-2">Menu & orders</h2>
           {!selectedRestaurant && (
             <p className="text-sm text-gray-500 dark:text-gray-400">
               Select a restaurant and click Manage menu to view and edit items.
@@ -629,7 +705,7 @@ const OwnerDashboard = () => {
                 </p>
               )}
               <div className="mt-2 space-y-2 max-h-64 overflow-y-auto">
-                {menuItems.map((item) => (
+                {menuItems.map((item, index) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between rounded-lg border border-light-border/80 dark:border-dark-border px-3 py-2"
@@ -656,6 +732,34 @@ const OwnerDashboard = () => {
                         {item.available ? 'Available' : 'Unavailable'}
                       </span>
                       <button
+                        className="text-xs text-gray-500 hover:underline"
+                        onClick={() =>
+                          setMenuItems((prev) => {
+                            if (index === 0) return prev;
+                            const next = [...prev];
+                            const [moved] = next.splice(index, 1);
+                            next.splice(index - 1, 0, moved);
+                            return next;
+                          })
+                        }
+                      >
+                        ↑
+                      </button>
+                      <button
+                        className="text-xs text-gray-500 hover:underline"
+                        onClick={() =>
+                          setMenuItems((prev) => {
+                            if (index === prev.length - 1) return prev;
+                            const next = [...prev];
+                            const [moved] = next.splice(index, 1);
+                            next.splice(index + 1, 0, moved);
+                            return next;
+                          })
+                        }
+                      >
+                        ↓
+                      </button>
+                      <button
                         className="text-xs text-primary hover:underline"
                         onClick={() => openEditMenuItem(item)}
                       >
@@ -671,10 +775,79 @@ const OwnerDashboard = () => {
                   </div>
                 ))}
               </div>
+              {menuItems.length > 0 && (
+                <div className="flex items-center justify-between mt-3 text-xs">
+                  <button
+                    className="text-primary hover:underline"
+                    onClick={() =>
+                      setMenuItems((prev) =>
+                        prev.map((item) => ({ ...item, available: true }))
+                      )
+                    }
+                  >
+                    Mark all available
+                  </button>
+                  <button
+                    className="text-gray-600 dark:text-gray-300 hover:underline"
+                    onClick={() =>
+                      setMenuItems((prev) =>
+                        prev.map((item) => ({ ...item, available: false }))
+                      )
+                    }
+                  >
+                    Mark all unavailable
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
       </div>
+
+      {selectedRestaurant && (
+        <div className="mt-8 bg-white dark:bg-dark-card rounded-2xl shadow-sm border border-light-border/80 dark:border-dark-border p-5 md:p-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-lg font-bold text-gray-900 dark:text-white">Recent orders</h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              {orders.length} order(s)
+            </p>
+          </div>
+          {orders.length === 0 && (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              No orders yet for this restaurant.
+            </p>
+          )}
+          <div className="space-y-2 max-h-72 overflow-y-auto">
+            {orders.map((order) => (
+              <div
+                key={order.id}
+                className="flex items-center justify-between rounded-lg border border-light-border/80 dark:border-dark-border px-3 py-2 text-sm"
+              >
+                <div>
+                  <p className="font-semibold text-gray-900 dark:text-white">
+                    ₹{order.totalAmount.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    {order.customerEmail || 'Customer'} • {order.items.length} item(s)
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={order.status}
+                    onChange={(e) => handleStatusChange(order, e.target.value)}
+                    className="text-xs px-2 py-1 rounded-full border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-gray-800 dark:text-gray-100"
+                  >
+                    <option value="PLACED">PLACED</option>
+                    <option value="PREPARING">PREPARING</option>
+                    <option value="OUT_FOR_DELIVERY">OUT_FOR_DELIVERY</option>
+                    <option value="COMPLETED">COMPLETED</option>
+                  </select>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {showRestaurantForm && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-40">
@@ -749,6 +922,59 @@ const OwnerDashboard = () => {
                 className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
                 placeholder="Cover image URL"
               />
+              <input
+                name="openingHours"
+                value={restaurantForm.openingHours}
+                onChange={handleRestaurantFormChange}
+                className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                placeholder="Opening hours (e.g. 11am – 11pm)"
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <input
+                  name="minOrderValue"
+                  value={restaurantForm.minOrderValue}
+                  onChange={handleRestaurantFormChange}
+                  className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Min order value (₹)"
+                />
+                <input
+                  name="deliveryFee"
+                  value={restaurantForm.deliveryFee}
+                  onChange={handleRestaurantFormChange}
+                  className="w-full px-3 py-2 rounded-lg border border-light-border/80 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Delivery fee (₹)"
+                />
+              </div>
+              <div className="flex items-center gap-4 text-sm text-gray-800 dark:text-gray-200">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="open"
+                    checked={restaurantForm.open}
+                    onChange={(e) =>
+                      setRestaurantForm((prev) => ({
+                        ...prev,
+                        open: e.target.checked
+                      }))
+                    }
+                  />
+                  <span>Currently open</span>
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    name="pureVeg"
+                    checked={restaurantForm.pureVeg}
+                    onChange={(e) =>
+                      setRestaurantForm((prev) => ({
+                        ...prev,
+                        pureVeg: e.target.checked
+                      }))
+                    }
+                  />
+                  <span>Pure veg</span>
+                </label>
+              </div>
             </div>
             <div className="mt-4 flex justify-end gap-3">
               <button

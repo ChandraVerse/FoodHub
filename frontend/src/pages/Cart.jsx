@@ -1,14 +1,19 @@
 import React, { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Trash2, Plus, Minus, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
 const Cart = () => {
   const { items, restaurantId, restaurantName, updateQuantity, removeItem, clearCart } = useCart();
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [email, setEmail] = useState(user?.email || '');
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [instructions, setInstructions] = useState('');
   const [placing, setPlacing] = useState(false);
 
   const subtotal = useMemo(
@@ -20,6 +25,13 @@ const Cart = () => {
 
   const handlePlaceOrder = async (event) => {
     event.preventDefault();
+    if (!user) {
+      if (typeof window !== 'undefined') {
+        window.alert('Please login to place your order.');
+      }
+      navigate('/login');
+      return;
+    }
     if (items.length === 0 || !restaurantId) {
       if (typeof window !== 'undefined') {
         window.alert('Your cart is empty.');
@@ -32,11 +44,21 @@ const Cart = () => {
       }
       return;
     }
+    if (!name || !phone || !address) {
+      if (typeof window !== 'undefined') {
+        window.alert('Please fill in your name, phone, and address.');
+      }
+      return;
+    }
     try {
       setPlacing(true);
       const body = {
         restaurantId,
         customerEmail: email,
+        customerName: name,
+        customerPhone: phone,
+        deliveryAddress: address,
+        deliveryInstructions: instructions,
         items: items.map((item) => ({
           menuItemId: item.id,
           name: item.name,
@@ -47,7 +69,8 @@ const Cart = () => {
       const response = await fetch('http://localhost:8080/api/orders', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...(user && user.token ? { Authorization: `Bearer ${user.token}` } : {})
         },
         body: JSON.stringify(body)
       });
@@ -59,9 +82,15 @@ const Cart = () => {
         }
         return;
       }
+      const saved = await response.json().catch(() => null);
       clearCart();
-      if (typeof window !== 'undefined') {
-        window.alert('Order placed successfully.');
+      const orderId = saved && saved.id ? saved.id : null;
+      if (orderId) {
+        navigate(`/order-confirmation/${orderId}`);
+      } else {
+        if (typeof window !== 'undefined') {
+          window.alert('Order placed successfully.');
+        }
       }
     } catch (e) {
       if (typeof window !== 'undefined') {
@@ -149,6 +178,54 @@ const Cart = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
                   placeholder="you@example.com"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Your full name"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Phone
+                </label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Contact number"
+                />
+              </div>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Delivery address
+                </label>
+                <textarea
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="Street, area, city, pincode"
+                />
+              </div>
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Delivery instructions (optional)
+                </label>
+                <textarea
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-dark-border bg-white dark:bg-dark-hover text-sm text-gray-900 dark:text-white"
+                  placeholder="E.g. Ring the bell, leave at door"
                 />
               </div>
               

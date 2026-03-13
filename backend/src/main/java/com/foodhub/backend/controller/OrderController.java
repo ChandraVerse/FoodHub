@@ -28,7 +28,7 @@ public class OrderController {
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<?> createOrder(@RequestBody @NonNull Order order) {
+    public ResponseEntity<?> createOrder(Authentication authentication, @RequestBody @NonNull Order order) {
         if (order.getRestaurantId() == null || order.getRestaurantId().isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", "restaurantId is required"));
@@ -44,6 +44,9 @@ public class OrderController {
                     .body(Map.of("message", "Restaurant not found"));
         }
         Restaurant r = restaurant.get();
+        if (authentication != null && authentication.getPrincipal() instanceof String userId) {
+            order.setCustomerId(userId);
+        }
         order.setOwnerId(r.getOwnerId());
         double total = order.getItems().stream()
                 .mapToDouble(i -> i.getPrice() * i.getQuantity())
@@ -65,6 +68,16 @@ public class OrderController {
                     .body(Map.of("message", "Order not found"));
         }
         return ResponseEntity.ok(optionalOrder.get());
+    }
+
+    @GetMapping("/customer/orders")
+    public ResponseEntity<?> getCustomerOrders(Authentication authentication) {
+        if (authentication == null || !(authentication.getPrincipal() instanceof String customerId)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "Unauthorized"));
+        }
+        List<Order> orders = orderRepository.findByCustomerIdOrderByCreatedAtDesc(customerId);
+        return ResponseEntity.ok(orders);
     }
 
     @GetMapping("/owner/restaurants/{restaurantId}/orders")

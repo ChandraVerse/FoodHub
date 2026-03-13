@@ -9,6 +9,8 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Cart from './pages/Cart';
+import OrderConfirmation from './pages/OrderConfirmation';
+import Orders from './pages/Orders';
 import OwnerDashboard from './pages/OwnerDashboard';
 import RestaurantList from './pages/RestaurantList';
 import RestaurantDetail from './pages/RestaurantDetail';
@@ -30,6 +32,8 @@ function App() {
                   <Route path="/login" element={<Login />} />
                   <Route path="/signup" element={<Signup />} />
                   <Route path="/cart" element={<Cart />} />
+                  <Route path="/order-confirmation/:id" element={<OrderConfirmation />} />
+                  <Route path="/orders" element={<Orders />} />
                 </Routes>
               </main>
               <Footer />

@@ -14,6 +14,11 @@ public class Order {
     private String restaurantId;
     private String ownerId;
     private String customerEmail;
+    private String customerId;
+    private String customerName;
+    private String customerPhone;
+    private String deliveryAddress;
+    private String deliveryInstructions;
     private List<OrderItem> items;
     private double totalAmount;
     private String status;
@@ -51,6 +56,46 @@ public class Order {
         this.customerEmail = customerEmail;
     }
 
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(String customerId) {
+        this.customerId = customerId;
+    }
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getCustomerPhone() {
+        return customerPhone;
+    }
+
+    public void setCustomerPhone(String customerPhone) {
+        this.customerPhone = customerPhone;
+    }
+
+    public String getDeliveryAddress() {
+        return deliveryAddress;
+    }
+
+    public void setDeliveryAddress(String deliveryAddress) {
+        this.deliveryAddress = deliveryAddress;
+    }
+
+    public String getDeliveryInstructions() {
+        return deliveryInstructions;
+    }
+
+    public void setDeliveryInstructions(String deliveryInstructions) {
+        this.deliveryInstructions = deliveryInstructions;
+    }
+
     public List<OrderItem> getItems() {
         return items;
     }
@@ -83,4 +128,3 @@ public class Order {
         this.createdAt = createdAt;
     }
 }
-

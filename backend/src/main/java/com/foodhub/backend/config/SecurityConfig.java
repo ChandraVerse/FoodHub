@@ -37,7 +37,8 @@ public class SecurityConfig {
                                 "/api/restaurants/**"
                         ).permitAll()
                         .requestMatchers(
-                                "/api/owner/**"
+                                "/api/owner/**",
+                                "/api/orders/**"
                         ).authenticated()
                         .anyRequest().permitAll()
                 )

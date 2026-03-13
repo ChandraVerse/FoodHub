@@ -4,11 +4,17 @@ import { ShoppingBag, User, Menu, X, Search, Tag } from 'lucide-react';
 import ThemeToggle from '../common/ThemeToggle';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import { useCart } from '../../context/CartContext';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
+  const { items, restaurantName } = useCart();
+
+  const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
+  const cartTotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   const navLinks = [
     { name: 'Home', path: '/' },
@@ -43,10 +49,86 @@ const Header = () => {
 
         <div className="hidden md:flex items-center space-x-4">
           <ThemeToggle />
-          <Link to="/cart" className="relative p-2 hover:bg-gray-100 dark:hover:bg-dark-hover rounded-full transition-colors text-gray-700 dark:text-gray-300">
-            <ShoppingBag size={24} />
-            <span className="absolute top-0 right-0 bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">3</span>
-          </Link>
+          <div
+            className="relative"
+            onMouseEnter={() => setIsCartOpen(true)}
+            onMouseLeave={() => setIsCartOpen(false)}
+          >
+            <Link
+              to="/cart"
+              className="relative p-2 hover:bg-gray-100 dark:hover:bg-dark-hover rounded-full transition-colors text-gray-700 dark:text-gray-300"
+            >
+              <ShoppingBag size={24} />
+              {cartCount > 0 && (
+                <span className="absolute top-0 right-0 bg-primary text-white text-xs font-bold rounded-full h-5 min-w-[1.25rem] px-1 flex items-center justify-center">
+                  {cartCount > 9 ? '9+' : cartCount}
+                </span>
+              )}
+            </Link>
+            <AnimatePresence>
+              {isCartOpen && cartCount > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.15 }}
+                  className="absolute right-0 mt-2 w-80 bg-white dark:bg-dark-card rounded-2xl shadow-lg border border-gray-100 dark:border-dark-border p-4 z-50"
+                >
+                  <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
+                    {restaurantName ? `From ${restaurantName}` : 'Your cart'}
+                  </p>
+                  <div className="max-h-56 overflow-y-auto space-y-3 text-sm">
+                    {items.slice(0, 4).map((item) => (
+                      <div key={item.id} className="flex justify-between items-center">
+                        <div>
+                          <p className="font-semibold text-gray-900 dark:text-white truncate">
+                            {item.name}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            Qty {item.quantity}
+                          </p>
+                        </div>
+                        <p className="text-primary font-semibold">
+                          ₹{(item.price * item.quantity).toFixed(2)}
+                        </p>
+                      </div>
+                    ))}
+                    {items.length > 4 && (
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        And {items.length - 4} more item(s)
+                      </p>
+                    )}
+                  </div>
+                  <div className="mt-3 flex items-center justify-between">
+                    <p className="text-sm text-gray-700 dark:text-gray-200">
+                      Total{' '}
+                      <span className="font-semibold text-primary">
+                        ₹{cartTotal.toFixed(2)}
+                      </span>
+                    </p>
+                    <Link
+                      to="/cart"
+                      className="text-xs font-semibold text-primary hover:underline"
+                    >
+                      View cart
+                    </Link>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          {user && user.role !== 'restaurant_owner' && (
+            <Link
+              to="/orders"
+              className={`text-sm font-semibold px-3 py-2 rounded-full ${
+                location.pathname === '/orders'
+                  ? 'bg-primary text-white'
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-dark-hover'
+              }`}
+            >
+              My Orders
+            </Link>
+          )}
           {user && user.role === 'restaurant_owner' && (
             <Link
               to="/owner"
@@ -112,7 +194,11 @@ const Header = () => {
               <Link to="/cart" onClick={() => setIsMenuOpen(false)} className="flex items-center justify-between text-gray-700 dark:text-gray-300 font-medium">
                 <span>Cart</span>
                 <div className="flex items-center gap-2">
-                   <span className="bg-primary text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">3</span>
+                   {cartCount > 0 && (
+                     <span className="bg-primary text-white text-xs font-bold rounded-full h-5 min-w-[1.25rem] px-1 flex items-center justify-center">
+                       {cartCount > 9 ? '9+' : cartCount}
+                     </span>
+                   )}
                    <ShoppingBag size={20} />
                 </div>
               </Link>

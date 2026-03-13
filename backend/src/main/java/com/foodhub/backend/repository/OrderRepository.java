@@ -11,5 +11,6 @@ public interface OrderRepository extends MongoRepository<Order, String> {
     List<Order> findByOwnerIdAndCreatedAtBetween(String ownerId, Instant start, Instant end);
 
     List<Order> findByRestaurantIdOrderByCreatedAtDesc(String restaurantId);
-}
 
+    List<Order> findByCustomerIdOrderByCreatedAtDesc(String customerId);
+}
